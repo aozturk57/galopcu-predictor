@@ -1569,9 +1569,29 @@ def update_data_for_hipodrom(hipodrom):
     """Belirli bir hipodrom için CSV verilerini güncelle ve ganyan geçmişini güncelle"""
     try:
         print(f"📥 {hipodrom} verisi güncelleniyor...")
+        
+        # Data klasörünün var olduğundan emin ol
+        data_dir = 'data'
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir, exist_ok=True)
+            print(f"📁 Data klasörü oluşturuldu: {data_dir}")
+        
         from horse_racing_predictor import HorseRacingPredictor
         predictor = HorseRacingPredictor(hipodrom)
-        predictor.download_data()
+        success = predictor.download_data()
+        
+        if not success:
+            print(f"⚠️ {hipodrom} verisi indirilemedi")
+            return False
+        
+        # Dosyanın gerçekten oluştuğunu kontrol et
+        csv_path = f'data/{hipodrom}_races.csv'
+        if os.path.exists(csv_path):
+            file_size = os.path.getsize(csv_path)
+            print(f"✅ {hipodrom} CSV dosyası oluşturuldu: {csv_path} ({file_size} bytes)")
+        else:
+            print(f"❌ {hipodrom} CSV dosyası oluşturulamadı: {csv_path}")
+            return False
         
         # CSV güncellendikten sonra ganyan geçmişini güncelle
         update_ganyan_history(hipodrom)
@@ -1580,6 +1600,8 @@ def update_data_for_hipodrom(hipodrom):
         return True
     except Exception as e:
         print(f"❌ {hipodrom} veri güncelleme hatası: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def update_predictions_for_hipodrom(hipodrom):
@@ -1607,15 +1629,23 @@ def update_all_data():
     global last_update_time
     print(f"🔄 CSV verileri güncelleniyor... ({datetime.now()})")
     
+    # Data ve output klasörlerinin var olduğundan emin ol
+    for dir_name in ['data', 'output']:
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name, exist_ok=True)
+            print(f"📁 {dir_name} klasörü oluşturuldu")
+    
     # Sadece CSV verilerini güncelle
     print("📥 CSV verileri güncelleniyor...")
+    success_count = 0
     for hipodrom in HIPODROMLAR:
-        update_data_for_hipodrom(hipodrom)
+        if update_data_for_hipodrom(hipodrom):
+            success_count += 1
     
     # Son güncelleme zamanını güncelle (site yenileme için)
     last_update_time = datetime.now().isoformat()
     
-    print(f"✅ CSV güncellemeleri tamamlandı ({datetime.now()})")
+    print(f"✅ CSV güncellemeleri tamamlandı ({success_count}/{len(HIPODROMLAR)} başarılı) ({datetime.now()})")
 
 def update_all_data_and_predictions():
     """Tüm hipodromlar için önce verileri, sonra tahminleri güncelle (model her seferinde yeniden eğitilir)"""

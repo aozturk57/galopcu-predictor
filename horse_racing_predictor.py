@@ -29,9 +29,19 @@ class HorseRacingPredictor:
         random.seed(RANDOM_SEED)
         # XGBoost modelleri zaten random_state=42 parametresi ile ayarlanıyor (train_ensemble_models içinde)
         
-        # Klasörleri oluştur
-        os.makedirs(self.data_dir, exist_ok=True)
-        os.makedirs(self.output_dir, exist_ok=True)
+        # Klasörleri oluştur (Render'da yazma izinleri için)
+        try:
+            os.makedirs(self.data_dir, exist_ok=True)
+            os.makedirs(self.output_dir, exist_ok=True)
+            # Klasörlerin yazılabilir olduğunu test et
+            test_file = os.path.join(self.data_dir, '.test_write')
+            with open(test_file, 'w') as f:
+                f.write('test')
+            os.remove(test_file)
+            print(f"✅ Klasörler hazır: {self.data_dir}, {self.output_dir}")
+        except Exception as e:
+            print(f"⚠️ Klasör oluşturma/yazma testi hatası: {e}")
+            # Yine de devam et, belki çalışır
         
         # Dosya yolları
         self.data_file = os.path.join(self.data_dir, f"{self.hipodrom_key}_races.csv")
