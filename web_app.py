@@ -1572,9 +1572,9 @@ def api_completed_races():
                                                 top_bet['is_winner'] = False
                                                 finished_winners.append(top_bet)
                                 
-                                # Her kazanan için completed_races'e ekle
+                                    # Her kazanan için completed_races'e ekle
                                     try:
-                                for bet in finished_winners:
+                                        for bet in finished_winners:
                                     # Timestamp hesapla
                                     try:
                                         race_hour, race_minute = map(int, bet['kosu_saat'].split(':'))
