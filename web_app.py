@@ -1313,30 +1313,62 @@ def api_tahminler(hipodrom):
 def api_manual_update():
     """Manuel güncelleme tetikle (test için)"""
     try:
+        print("="*60)
         print("🔄 Manuel güncelleme tetiklendi...")
+        print(f"📅 Zaman: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        print("="*60)
         # Background thread'de çalıştır
         import threading
         def update_in_background():
             try:
+                print("📥 CSV verileri güncelleniyor...")
                 update_all_data()
+                print("🎯 Tahminler oluşturuluyor...")
                 run_daily_update()
-                print("✅ Manuel güncelleme tamamlandı")
+                print("="*60)
+                print("✅ Manuel güncelleme tamamlandı!")
+                print(f"📅 Zaman: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+                print("="*60)
             except Exception as e:
+                print("="*60)
                 print(f"❌ Manuel güncelleme hatası: {e}")
                 import traceback
                 traceback.print_exc()
+                print("="*60)
         
         thread = threading.Thread(target=update_in_background, daemon=True)
         thread.start()
         
         return jsonify({
             'status': 'success',
-            'message': 'Güncelleme başlatıldı, arka planda çalışıyor...'
+            'message': 'Güncelleme başlatıldı, arka planda çalışıyor... Log\'ları kontrol et.'
         })
     except Exception as e:
         return jsonify({
             'status': 'error',
             'message': str(e)
+        }), 500
+
+@app.route('/api/scheduler-status')
+def api_scheduler_status():
+    """Scheduler durumunu kontrol et"""
+    try:
+        jobs = scheduler.get_jobs()
+        job_info = []
+        for job in jobs:
+            job_info.append({
+                'id': job.id,
+                'name': job.name,
+                'next_run': str(job.next_run_time) if job.next_run_time else None
+            })
+        return jsonify({
+            'scheduler_running': scheduler.running,
+            'jobs': job_info,
+            'total_jobs': len(jobs)
+        })
+    except Exception as e:
+        return jsonify({
+            'error': str(e)
         }), 500
 
 @app.route('/api/completed-races')
