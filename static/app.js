@@ -168,22 +168,40 @@ async function loadHipodromlar(skipAutoSelect = false) {
         const tabButtons = tabsList.querySelectorAll('button');
         tabButtons.forEach(button => {
             button.addEventListener('click', async () => {
-                // Remove active styling from all tabs
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                // Add active styling to clicked tab
-                button.classList.add('active');
-                
-                const hipodrom = button.dataset.hipodrom;
-                // Şehir değiştirildiğinde her zaman AI Tahminler tab'ını açmak için
-                // autoSelectingRace ve preservingTab flag'lerini sıfırla
-                window.autoSelectingRace = false;
-                window.preservingTab = false;
-                await loadTahminler(hipodrom, false, false);
-                
-                // Yeni hipodrom seçildiğinde auto-refresh'i güncelle
-                startAutoRefresh(hipodrom);
+                try {
+                    // Remove active styling from all tabs
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // Add active styling to clicked tab
+                    button.classList.add('active');
+                    
+                    const hipodrom = button.dataset.hipodrom;
+                    console.log('🔄 Şehir değiştirildi:', hipodrom);
+                    
+                    // Şehir değiştirildiğinde her zaman AI Tahminler tab'ını açmak için
+                    // autoSelectingRace ve preservingTab flag'lerini sıfırla
+                    window.autoSelectingRace = false;
+                    window.preservingTab = false;
+                    
+                    // Loading'i göster
+                    const loading = document.getElementById('contentLoading');
+                    const content = document.getElementById('tahminlerContent');
+                    if (loading) loading.style.display = 'flex';
+                    if (content) content.style.display = 'none';
+                    
+                    await loadTahminler(hipodrom, false, false);
+                    
+                    // Yeni hipodrom seçildiğinde auto-refresh'i güncelle
+                    startAutoRefresh(hipodrom);
+                } catch (error) {
+                    console.error('❌ Şehir değiştirirken hata:', error);
+                    const errorDiv = document.getElementById('errorMessage');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = `<p style="color: #991b1b; font-weight: 500;">Şehir değiştirirken hata: ${error.message}</p>`;
+                    }
+                }
             });
         });
         
