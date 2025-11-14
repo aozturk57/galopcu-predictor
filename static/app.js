@@ -681,10 +681,12 @@ function getCinsDetayAciklama(cinsDetay) {
 
 // Predictions Page Functions
 async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = false) {
-    // Koşu tablarını gizle (yeni hipodrom yüklenirken)
-    const kosuTabsContainer = document.getElementById('kosuTabsContainer');
-    if (kosuTabsContainer) {
-        kosuTabsContainer.style.display = 'none';
+    // Koşu tablarını gizle (yeni hipodrom yüklenirken) - ama sadece yeni yüklemede
+    if (!preserveScroll) {
+        const kosuTabsContainer = document.getElementById('kosuTabsContainer');
+        if (kosuTabsContainer) {
+            kosuTabsContainer.style.display = 'none';
+        }
     }
     const loading = document.getElementById('contentLoading');
     const content = document.getElementById('tahminlerContent');
@@ -696,13 +698,16 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
     
     if (!hipodrom) {
         console.error('Hipodrom tanımlı değil!');
-        loading.style.display = 'none';
-        error.style.display = 'block';
-        error.innerHTML = '<p style="color: #991b1b; font-weight: 500;">Hipodrom bilgisi bulunamadı.</p>';
+        if (loading) loading.style.display = 'none';
+        if (error) {
+            error.style.display = 'block';
+            error.innerHTML = '<p style="color: #991b1b; font-weight: 500;">Hipodrom bilgisi bulunamadı.</p>';
+        }
         return;
     }
     
     window.currentHipodrom = hipodrom;
+    console.log('🔄 Tahminler yükleniyor:', hipodrom);
     
     // Scroll pozisyonunu kaydet (eğer preserveScroll true ise)
     let scrollPosition = 0;
@@ -763,14 +768,23 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
         }
         
         const data = await response.json();
-        console.log('API yanıtı alındı:', data);
-        console.log('Best bets:', data.best_bets);
-        console.log('Best bets sayısı:', data.best_bets ? data.best_bets.length : 0);
+        console.log('✅ API yanıtı alındı:', hipodrom);
+        console.log('📊 Koşular:', data.kosular ? data.kosular.length : 0);
+        console.log('📊 Best bets:', data.best_bets ? data.best_bets.length : 0);
         
         // Veriyi global olarak sakla (refreshAllData için)
         window.currentTahminlerData = data;
         
-        // Info section - kaldırıldı
+        // Veri doğrulama
+        if (!data || !data.kosular) {
+            console.error('❌ API yanıtı geçersiz:', data);
+            if (loading) loading.style.display = 'none';
+            if (error) {
+                error.style.display = 'block';
+                error.innerHTML = '<p style="color: #991b1b; font-weight: 500;">Veri formatı geçersiz.</p>';
+            }
+            return;
+        }
         
         // Koşu tablarını oluştur
         try {
@@ -778,9 +792,10 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
             
             console.log('📊 Koşular verisi:', data.kosular);
             console.log('📊 Koşu sayısı:', data.kosular ? data.kosular.length : 0);
+            console.log('📊 kosuTabsList var mı?', !!kosuTabsList);
             
             // Koşu tablarını her zaman göster (veri varsa)
-            if (data.kosular && data.kosular.length > 0 && kosuTabsList) {
+            if (data.kosular && Array.isArray(data.kosular) && data.kosular.length > 0 && kosuTabsList) {
                 // AI ikonu SVG (üst üste iki 4 köşeli yıldız - sparkles)
                 const aiIconSVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
                     <!-- Üst yıldız -->
@@ -915,8 +930,12 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
                 }
             } else {
                 // Koşu yoksa tab container'ı gizle ama log'la
-                console.log('⚠️ Koşu bulunamadı - data.kosular:', data.kosular);
-                console.log('⚠️ kosuTabsList:', kosuTabsList);
+                console.warn('⚠️ Koşu bulunamadı');
+                console.warn('  - data.kosular:', data.kosular);
+                console.warn('  - Array mi?', Array.isArray(data.kosular));
+                console.warn('  - Uzunluk:', data.kosular ? data.kosular.length : 'null/undefined');
+                console.warn('  - kosuTabsList:', kosuTabsList);
+                
                 const kosuTabsContainer = document.getElementById('kosuTabsContainer');
                 if (kosuTabsContainer) {
                     kosuTabsContainer.style.display = 'none';
