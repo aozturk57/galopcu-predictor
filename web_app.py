@@ -1479,8 +1479,8 @@ def api_completed_races():
                                 
                                 # En mantıklı oyunlar listesi oluştur
                                 if 'kosular' in data and data['kosular']:
-                                # Türkiye timezone'una göre saat al
-                                turkey_tz = pytz.timezone('Europe/Istanbul')
+                                    # Türkiye timezone'una göre saat al
+                                    turkey_tz = pytz.timezone('Europe/Istanbul')
                                 current_time = datetime.now(turkey_tz)
                                 current_hour = current_time.hour
                                 current_minute = current_time.minute
