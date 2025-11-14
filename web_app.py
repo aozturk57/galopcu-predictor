@@ -576,7 +576,7 @@ def api_tahminler(hipodrom):
         
         # Cache'de yoksa parse et (bu hızlı olmalı)
         if data is None:
-        data = parse_tahmin_dosyasi(file_path)
+            data = parse_tahmin_dosyasi(file_path)
         if not data:
             print(f"❌ {hipodrom} için tahmin dosyası parse edilemedi")
             return jsonify({'error': 'Tahmin dosyası parse edilemedi'}), 500
