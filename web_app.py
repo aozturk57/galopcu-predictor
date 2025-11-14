@@ -30,6 +30,11 @@ scheduler.start()
 # Son güncelleme zamanı (site yenileme için)
 last_update_time = None
 
+# Cache mekanizması (API yanıtlarını hızlı tutmak için)
+_tahmin_cache = {}  # {hipodrom: {'data': {...}, 'timestamp': datetime, 'file_mtime': float}}
+_ganyan_cache = {}  # {hipodrom: {'data': {...}, 'timestamp': datetime}}
+CACHE_TTL = 60  # Cache süresi (saniye) - 1 dakika
+
 # Hipodrom listesi
 HIPODROMLAR = [
     'ANKARA', 'ISTANBUL', 'IZMIR', 'BURSA', 'KOCAELI', 
@@ -506,11 +511,26 @@ def calculate_profit_from_score_and_ganyan(combined_score, ganyan):
     
 @app.route('/api/tahminler/<hipodrom>')
 def api_tahminler(hipodrom):
-    """Belirli bir hipodrom için tahminleri döndür"""
-    global last_update_time
+    """Belirli bir hipodrom için tahminleri döndür (cache'li ve asenkron)"""
+    global last_update_time, _tahmin_cache
     try:
         hipodrom = hipodrom.upper()
         file_path = f'output/{hipodrom}_tahminler.txt'
+        
+        # Cache kontrolü - eğer cache'de varsa ve dosya değişmemişse direkt döndür
+        if hipodrom in _tahmin_cache:
+            cache_entry = _tahmin_cache[hipodrom]
+            cache_time = cache_entry['timestamp']
+            cache_file_mtime = cache_entry['file_mtime']
+            
+            # Dosya hala var mı ve değişmiş mi kontrol et
+            if os.path.exists(file_path):
+                current_file_mtime = os.path.getmtime(file_path)
+                # Cache süresi dolmamış ve dosya değişmemişse cache'den döndür
+                time_diff = (datetime.now() - cache_time).total_seconds()
+                if time_diff < CACHE_TTL and current_file_mtime == cache_file_mtime:
+                    print(f"⚡ {hipodrom} için cache'den döndürülüyor (hızlı yanıt)")
+                    return jsonify(cache_entry['data'])
         
         if not os.path.exists(file_path):
             print(f"❌ {hipodrom} için tahmin dosyası bulunamadı: {file_path}")
@@ -569,7 +589,18 @@ def api_tahminler(hipodrom):
             last_update_time = file_time
             print(f"🔄 Tahmin dosyası güncellendi: {hipodrom} - {file_time}")
         
-        data = parse_tahmin_dosyasi(file_path)
+        # Parse işlemini background thread'de yap (asenkron)
+        # Ama önce cache'de varsa onu kullan
+        data = None
+        if hipodrom in _tahmin_cache:
+            cache_entry = _tahmin_cache[hipodrom]
+            if os.path.exists(file_path) and os.path.getmtime(file_path) == cache_entry['file_mtime']:
+                # Cache'den parse edilmiş data'yı al
+                data = cache_entry.get('parsed_data')
+        
+        # Cache'de yoksa parse et (bu hızlı olmalı)
+        if data is None:
+            data = parse_tahmin_dosyasi(file_path)
         if not data:
             print(f"❌ {hipodrom} için tahmin dosyası parse edilemedi")
             return jsonify({'error': 'Tahmin dosyası parse edilemedi'}), 500
