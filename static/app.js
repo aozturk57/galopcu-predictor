@@ -131,7 +131,25 @@ async function loadHipodromlar(skipAutoSelect = false) {
     const tabsLoading = document.getElementById('tabsLoading');
     
     try {
-        const response = await fetch(`${API_BASE}/api/hipodromlar`);
+        // Timeout ekle (15 saniye)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        let response;
+        try {
+            response = await fetch(`${API_BASE}/api/hipodromlar`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                console.error('❌ Hipodromlar API timeout (15 saniye)');
+                tabsLoading.style.display = 'none';
+                tabsContainer.innerHTML = '<div style="text-align: center; padding: 2rem 0;"><p style="color: #dc2626; font-weight: 500;">İstek zaman aşımına uğradı. Lütfen sayfayı yenileyin.</p></div>';
+                return;
+            }
+            throw fetchError;
+        }
+        
         const hipodromlar = await response.json();
         
         tabsLoading.style.display = 'none';
