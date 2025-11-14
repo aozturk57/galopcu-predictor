@@ -7,10 +7,10 @@ gunicorn==21.2.0
 pandas>=2.2.0
 numpy>=1.26.0
 
-# Machine Learning
-xgboost==2.0.3
-scikit-learn==1.3.2
-joblib==1.3.2
+# Machine Learning - Pre-built wheels kullan
+xgboost>=2.0.0
+scikit-learn>=1.5.0
+joblib>=1.3.0
 
 # Scheduler
 apscheduler==3.10.4
