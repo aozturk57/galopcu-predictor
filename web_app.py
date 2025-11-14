@@ -1622,7 +1622,7 @@ def api_completed_races():
                                 traceback.print_exc()
                                 continue
                     except Exception as e:
-                        print(f"❌ {hipodrom} tamamlanan koşular işlenirken hata: {e}")
+                        print(f"❌ {hipodrom} dosya okuma hatası: {e}")
                         import traceback
                         traceback.print_exc()
                         continue
