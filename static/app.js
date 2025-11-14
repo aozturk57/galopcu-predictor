@@ -356,7 +356,24 @@ async function loadCompletedRacesCarousel() {
     
     try {
         console.log('🔄 Tamamlanan koşular yükleniyor...');
-        const response = await fetch(`${API_BASE}/api/completed-races`);
+        
+        // Timeout ekle (10 saniye)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        let response;
+        try {
+            response = await fetch(`${API_BASE}/api/completed-races`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                console.warn('⚠️ Tamamlanan koşular API timeout (10 saniye)');
+                carouselContainer.style.display = 'none';
+                return;
+            }
+            throw fetchError;
+        }
         
         if (!response.ok) {
             console.error('❌ Tamamlanan koşular API hatası:', response.status, response.statusText);
@@ -735,7 +752,34 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
         const url = `${API_BASE}/api/tahminler/${hipodrom}`;
         console.log('API çağrısı yapılıyor:', url);
         
-        const response = await fetch(url);
+        // Timeout ekle (30 saniye)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        let response;
+        try {
+            response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                console.error('❌ API çağrısı timeout (30 saniye)');
+                if (loading) loading.style.display = 'none';
+                if (error) {
+                    error.style.display = 'block';
+                    error.innerHTML = `
+                        <p style="color: #991b1b; font-weight: 500; margin-bottom: 1rem;">
+                            ⏱️ İstek zaman aşımına uğradı (30 saniye)
+                        </p>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">
+                            Sunucu yanıt vermiyor. Lütfen sayfayı yenileyin veya birkaç dakika sonra tekrar deneyin.
+                        </p>
+                    `;
+                }
+                return;
+            }
+            throw fetchError;
+        }
         
         if (!response.ok) {
             const errorText = await response.text();
