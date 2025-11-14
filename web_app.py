@@ -1543,7 +1543,7 @@ def api_completed_races():
                                         top_bets = []
                                         for race_key, race_bets in races_dict.items():
                                             sorted_bets = sorted(race_bets, key=lambda x: x.get('combined_score', 0), reverse=True)
-                                                top_bets.extend(sorted_bets[:3])
+                                            top_bets.extend(sorted_bets[:3])
                                         return top_bets
                                     
                                     # Bitmiş ve aktif koşuları ayır
