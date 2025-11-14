@@ -1431,39 +1431,108 @@ def api_completed_races():
         for hipodrom in HIPODROMLAR:
             try:
                 # api_tahminler endpoint'ini çağır ve best_bets'i al
-                from flask import request
-                with app.test_request_context():
-                    try:
-                        # api_tahminler fonksiyonunu çağır
-                        response = api_tahminler(hipodrom)
-                        if response.status_code == 200:
-                            data = response.get_json()
-                            if data and 'best_bets' in data:
-                                # Bitmiş koşuları filtrele (kazanan olmasa bile göster)
-                                finished_bets = [bet for bet in data['best_bets'] 
-                                                if bet.get('is_finished')]
+                # Direkt fonksiyonu çağırmak yerine, parse_tahmin_dosyasi kullan
+                try:
+                    file_path = f'output/{hipodrom}_tahminler.txt'
+                    if os.path.exists(file_path):
+                        # Tahmin dosyasını parse et
+                        data = parse_tahmin_dosyasi(file_path)
+                        if data:
+                            # Ganyan ve AGF verilerini ekle
+                            ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+                            
+                            # En mantıklı oyunlar listesi oluştur
+                            if 'kosular' in data and data['kosular']:
+                                # Türkiye timezone'una göre saat al
+                                turkey_tz = pytz.timezone('Europe/Istanbul')
+                                current_time = datetime.now(turkey_tz)
+                                current_hour = current_time.hour
+                                current_minute = current_time.minute
                                 
-                                # Sadece kazanan olanları al (eğer varsa)
-                                finished_winners = [bet for bet in finished_bets 
-                                                   if bet.get('is_winner')]
+                                def is_race_finished_local(kosu_saat):
+                                    """Koşu bitmiş mi? (saati geçmiş mi?)"""
+                                    try:
+                                        race_hour, race_minute = map(int, kosu_saat.split(':'))
+                                        race_total_minutes = race_hour * 60 + race_minute
+                                        current_total_minutes = current_hour * 60 + current_minute
+                                        time_diff = current_total_minutes - race_total_minutes
+                                        return time_diff >= 10
+                                    except:
+                                        return False
                                 
-                                # Eğer kazanan yoksa, bitmiş koşulardan en yüksek skorlu atları al
-                                if len(finished_winners) == 0 and len(finished_bets) > 0:
-                                    # Koşu bazında grupla ve her koşudan en yüksek skorlu atı al
+                                # Best bets oluştur
+                                all_candidates = []
+                                for kosu in data['kosular']:
+                                    kosu_finished = is_race_finished_local(kosu.get('saat', ''))
+                                    race_winner = get_race_winner_helper(hipodrom, kosu.get('kosu_no'), kosu.get('saat')) if kosu_finished else None
+                                    
+                                    for at in kosu.get('atlar', []):
+                                        at_no = at.get('at_no')
+                                        at_adi = at.get('at_adi')
+                                        
+                                        # Ganyan ve AGF verilerini al
+                                        ganyan_value = ganyan_agf_data.get(at_adi, {}).get('ganyan')
+                                        agf1_value = ganyan_agf_data.get(at_adi, {}).get('agf1')
+                                        
+                                        # Combined score hesapla
+                                        ai_score = at.get('ai_score', 0)
+                                        combined_score = (ai_score * 0.7) + ((1.0 / (agf1_value or 100)) * 30)
+                                        
+                                        is_winner = race_winner and str(at_no) == str(race_winner)
+                                        
+                                        all_candidates.append({
+                                            'hipodrom': hipodrom,
+                                            'kosu_no': kosu.get('kosu_no'),
+                                            'kosu_saat': kosu.get('saat'),
+                                            'at_no': at_no,
+                                            'at_adi': at_adi,
+                                            'jokey_adi': at.get('jokey_adi'),
+                                            'ai_score': ai_score,
+                                            'combined_score': combined_score,
+                                            'ganyan': ganyan_value,
+                                            'agf1': agf1_value,
+                                            'is_finished': kosu_finished,
+                                            'is_winner': is_winner
+                                        })
+                                
+                                # Koşu bazında en yüksek 3 atı al
+                                def get_top_3_per_race_local(bets):
                                     races_dict = {}
-                                    for bet in finished_bets:
+                                    for bet in bets:
                                         race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
                                         if race_key not in races_dict:
                                             races_dict[race_key] = []
                                         races_dict[race_key].append(bet)
                                     
-                                    # Her koşudan en yüksek skorlu atı al (sadece ilk 3'teki değil, en yüksek skorlu)
+                                    top_bets = []
+                                    for race_key, race_bets in races_dict.items():
+                                        sorted_bets = sorted(race_bets, key=lambda x: x.get('combined_score', 0), reverse=True)
+                                        top_bets.extend(sorted_bets[:3])
+                                    return top_bets
+                                
+                                # Bitmiş ve aktif koşuları ayır
+                                finished_bets = [b for b in all_candidates if b.get('is_finished')]
+                                active_bets = [b for b in all_candidates if not b.get('is_finished')]
+                                
+                                # Her gruptan en yüksek 3 atı al
+                                finished_top_bets = get_top_3_per_race_local(finished_bets)
+                                
+                                # Bitmiş koşulardan kazananları al
+                                finished_winners = [bet for bet in finished_top_bets if bet.get('is_winner')]
+                                
+                                # Eğer kazanan yoksa, bitmiş koşulardan en yüksek skorlu atları al
+                                if len(finished_winners) == 0 and len(finished_top_bets) > 0:
+                                    races_dict = {}
+                                    for bet in finished_top_bets:
+                                        race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
+                                        if race_key not in races_dict:
+                                            races_dict[race_key] = []
+                                        races_dict[race_key].append(bet)
+                                    
                                     for race_key, bets in races_dict.items():
                                         bets_sorted = sorted(bets, key=lambda x: x.get('combined_score', 0), reverse=True)
                                         if len(bets_sorted) > 0:
-                                            # En yüksek skorlu atı al (kazanan olmasa bile)
-                                            top_bet = bets_sorted[0]
-                                            # is_winner'ı False yap (çünkü gerçek kazanan değil)
+                                            top_bet = bets_sorted[0].copy()
                                             top_bet['is_winner'] = False
                                             finished_winners.append(top_bet)
                                 
