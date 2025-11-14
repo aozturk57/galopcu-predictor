@@ -1611,11 +1611,11 @@ def api_completed_races():
                                                 'ganyan': ganyan_value,
                                                 'timestamp': race_total_minutes
                                             })
-                    except Exception as e:
+                                    except Exception as e:
                                         print(f"⚠️ {hipodrom} için completed_races eklenirken hata: {e}")
-                        import traceback
-                        traceback.print_exc()
-                        continue
+                                        import traceback
+                                        traceback.print_exc()
+                                        continue
             except Exception as e:
                 print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
                                 import traceback
