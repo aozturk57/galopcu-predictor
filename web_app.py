@@ -519,19 +519,31 @@ def api_tahminler(hipodrom):
                 print(f"📁 Output klasörü oluşturuldu: {output_dir}")
             
             # Eğer tahmin dosyası yoksa, hemen güncelleme tetikle (background'da)
-            import threading
-            def trigger_update():
-                try:
-                    print(f"🔄 {hipodrom} için otomatik güncelleme tetiklendi...")
-                    from horse_racing_predictor import HorseRacingPredictor
-                    predictor = HorseRacingPredictor(hipodrom)
-                    predictor.run_full_pipeline()
-                    print(f"✅ {hipodrom} için otomatik güncelleme tamamlandı")
-                except Exception as e:
-                    print(f"❌ {hipodrom} otomatik güncelleme hatası: {e}")
+            # Ama sadece bir kez tetikle (çoklu istekleri önlemek için)
+            if not hasattr(api_tahminler, '_updating_hipodroms'):
+                api_tahminler._updating_hipodroms = set()
             
-            thread = threading.Thread(target=trigger_update, daemon=True)
-            thread.start()
+            if hipodrom not in api_tahminler._updating_hipodroms:
+                api_tahminler._updating_hipodroms.add(hipodrom)
+                import threading
+                def trigger_update():
+                    try:
+                        print(f"🔄 {hipodrom} için otomatik güncelleme tetiklendi...")
+                        from horse_racing_predictor import HorseRacingPredictor
+                        predictor = HorseRacingPredictor(hipodrom)
+                        predictor.run_full_pipeline()
+                        print(f"✅ {hipodrom} için otomatik güncelleme tamamlandı")
+                    except Exception as e:
+                        print(f"❌ {hipodrom} otomatik güncelleme hatası: {e}")
+                        import traceback
+                        traceback.print_exc()
+                    finally:
+                        # Güncelleme bitince listeden çıkar
+                        if hasattr(api_tahminler, '_updating_hipodroms'):
+                            api_tahminler._updating_hipodroms.discard(hipodrom)
+                
+                thread = threading.Thread(target=trigger_update, daemon=True)
+                thread.start()
             
             return jsonify({
                 'error': f'{hipodrom} için tahmin dosyası bulunamadı',
@@ -1750,6 +1762,7 @@ def initial_data_update():
 initial_data_update()
 
 # 5 dakikada bir sadece CSV verilerini güncelle (tahminler güncellenmez)
+# Render'da scheduler'ın çalıştığından emin olmak için hemen başlat
 scheduler.add_job(
     func=update_all_data,
     trigger=IntervalTrigger(minutes=5),
@@ -1757,6 +1770,8 @@ scheduler.add_job(
     name='Update CSV data every 5 minutes (predictions not updated)',
     replace_existing=True
 )
+print(f"✅ Scheduler başlatıldı: {scheduler.running}")
+print(f"📋 Aktif job'lar: {[job.id for job in scheduler.get_jobs()]}")
 
 # Her gün sabah 07:00'da bugün koşu olan şehirler için tahmin çalıştır
 scheduler.add_job(

@@ -779,6 +779,7 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
             console.log('📊 Koşular verisi:', data.kosular);
             console.log('📊 Koşu sayısı:', data.kosular ? data.kosular.length : 0);
             
+            // Koşu tablarını her zaman göster (veri varsa)
             if (data.kosular && data.kosular.length > 0 && kosuTabsList) {
                 // AI ikonu SVG (üst üste iki 4 köşeli yıldız - sparkles)
                 const aiIconSVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
@@ -913,6 +914,9 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
                     }
                 }
             } else {
+                // Koşu yoksa tab container'ı gizle ama log'la
+                console.log('⚠️ Koşu bulunamadı - data.kosular:', data.kosular);
+                console.log('⚠️ kosuTabsList:', kosuTabsList);
                 const kosuTabsContainer = document.getElementById('kosuTabsContainer');
                 if (kosuTabsContainer) {
                     kosuTabsContainer.style.display = 'none';
