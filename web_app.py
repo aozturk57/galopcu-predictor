@@ -1561,6 +1561,29 @@ def run_daily_update():
 # İlk güncelleme zamanını ayarla (uygulama başlarken)
 last_update_time = datetime.now().isoformat()
 
+def initial_data_update():
+    """Uygulama başlarken ilk veri güncellemesini yap (background'da)"""
+    import threading
+    def update_in_background():
+        print("🔄 İlk veri güncellemesi başlatılıyor...")
+        try:
+            # Önce CSV verilerini güncelle
+            update_all_data()
+            # Sonra bugün koşu olan şehirler için tahmin çalıştır
+            run_daily_update()
+            print("✅ İlk veri güncellemesi tamamlandı")
+        except Exception as e:
+            print(f"❌ İlk veri güncellemesi hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    # Background thread'de çalıştır (uygulama başlamasını engellemesin)
+    thread = threading.Thread(target=update_in_background, daemon=True)
+    thread.start()
+
+# Uygulama başlarken ilk güncellemeyi yap
+initial_data_update()
+
 # 5 dakikada bir sadece CSV verilerini güncelle (tahminler güncellenmez)
 scheduler.add_job(
     func=update_all_data,
