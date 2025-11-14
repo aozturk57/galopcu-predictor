@@ -1616,8 +1616,8 @@ def api_completed_races():
                                         import traceback
                                         traceback.print_exc()
                                         continue
-            except Exception as e:
-                print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
+                            except Exception as e:
+                                print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
                                 import traceback
                                 traceback.print_exc()
                                 continue
