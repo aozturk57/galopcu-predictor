@@ -355,17 +355,29 @@ async function loadCompletedRacesCarousel() {
     }
     
     try {
+        console.log('🔄 Tamamlanan koşular yükleniyor...');
         const response = await fetch(`${API_BASE}/api/completed-races`);
+        
+        if (!response.ok) {
+            console.error('❌ Tamamlanan koşular API hatası:', response.status, response.statusText);
+            carouselContainer.style.display = 'none';
+            return;
+        }
+        
         const data = await response.json();
+        console.log('📊 Tamamlanan koşular API yanıtı:', data);
         
         if (!data.completed_races || data.completed_races.length === 0) {
             console.log('ℹ️ Tamamlanan koşu bulunamadı veya ilk 3 tahminimizde kazanan yok');
+            console.log('🔍 API yanıtı:', data);
             // Widget'ı gizle ama console'da bilgi ver
             carouselContainer.style.display = 'none';
             // Debug: Widget'ın HTML'de olduğunu kontrol et
             console.log('🔍 Widget HTML elementi:', carouselContainer);
             return;
         }
+        
+        console.log('✅ Tamamlanan koşular bulundu:', data.completed_races.length, 'adet');
         
         console.log(`✅ ${data.completed_races.length} tamamlanan koşu bulundu`);
         carouselContainer.style.display = 'block';
