@@ -576,7 +576,7 @@ def api_tahminler(hipodrom):
         
         # Cache'de yoksa parse et (bu hızlı olmalı)
         if data is None:
-            data = parse_tahmin_dosyasi(file_path)
+        data = parse_tahmin_dosyasi(file_path)
         if not data:
             print(f"❌ {hipodrom} için tahmin dosyası parse edilemedi")
             return jsonify({'error': 'Tahmin dosyası parse edilemedi'}), 500
@@ -589,7 +589,7 @@ def api_tahminler(hipodrom):
             if time_diff < CACHE_TTL:
                 ganyan_agf_data = cache_entry['data']
             else:
-                ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+        ganyan_agf_data = get_ganyan_agf_data(hipodrom)
                 _ganyan_cache[hipodrom] = {
                     'data': ganyan_agf_data,
                     'timestamp': datetime.now()
