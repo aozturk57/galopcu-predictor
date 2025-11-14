@@ -589,7 +589,7 @@ def api_tahminler(hipodrom):
             if time_diff < CACHE_TTL:
                 ganyan_agf_data = cache_entry['data']
             else:
-        ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+                ganyan_agf_data = get_ganyan_agf_data(hipodrom)
                 _ganyan_cache[hipodrom] = {
                     'data': ganyan_agf_data,
                     'timestamp': datetime.now()
