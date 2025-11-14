@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hipodrom }} - At Yarışı Tahminleri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="back-button">← Geri</a>
+                <h1 class="logo">🏇 {{ hipodrom }} Tahminleri</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Tahminler yükleniyor...</p>
+            </div>
+
+            <div id="tahminlerContent" style="display: none;">
+                <section class="info-section" id="infoSection">
+                    <div class="info-card">
+                        <div class="info-item">
+                            <span class="info-label">📅 Tarih:</span>
+                            <span class="info-value" id="tarih">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🏁 Toplam Koşu:</span>
+                            <span class="info-value" id="toplamKosu">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🐴 Toplam At:</span>
+                            <span class="info-value" id="toplamAt">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="kosular-section" id="kosularSection">
+                    <!-- Koşular buraya dinamik olarak eklenecek -->
+                </section>
+            </div>
+
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <p>❌ Tahminler yüklenirken bir hata oluştu.</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 At Yarışı Tahmin Sistemi. Tüm hakları saklıdır.</p>
+        </footer>
+    </div>
+
+    <script>
+        window.hipodrom = "{{ hipodrom }}";
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

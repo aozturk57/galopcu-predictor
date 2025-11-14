@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>digidig - At Yarışı Tahmin Sistemi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Dark Mode Renk Paleti - Header rengi ve logo yeşili */
+        :root {
+            /* Header rengi tonları (koyu mavi-gri) */
+            --primary-900: #0F1820;
+            --primary-800: #1E2E3C;
+            --primary-700: #2A3D4F;
+            --primary-600: #364F65;
+            --primary-500: #507290;
+            --primary-400: #6B8FB5;
+            --primary-300: #A8C5E0;
+            --primary-100: #D6E3F2;
+            
+            /* Logo yeşili */
+            --green-500: #CEE53F;
+            --green-400: #D9EB6A;
+            --green-300: #E4F195;
+            --green-200: #EFF7C0;
+            
+            /* Glass efektler için mavi tonları */
+            --blue-glass: rgba(107, 143, 181, 0.15);
+            --blue-glass-hover: rgba(107, 143, 181, 0.25);
+            
+            /* Glass efektler için kırmızı tonları */
+            --red-glass: rgba(239, 68, 68, 0.15);
+            --red-glass-hover: rgba(239, 68, 68, 0.25);
+            
+            /* Dark mode arkaplan */
+            --bg-color: var(--primary-900);
+            --bg-secondary: var(--primary-800);
+            --bg-tertiary: var(--primary-700);
+            
+            /* Dark mode metin */
+            --text-dark: #E5E7EB;
+            --text-light: #9CA3AF;
+            --text-muted: #6B7280;
+            
+            /* Dark mode border */
+            --border-color: rgba(107, 143, 181, 0.2);
+            --border-hover: rgba(107, 143, 181, 0.4);
+            
+            /* White ve gray */
+            --white: #ffffff;
+            --gray-100: #E0E1E2;
+            --gray-200: #B7B9BD;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        @media (min-width: 1280px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+        }
+        
+        /* Header - Dark Mode */
+        header {
+            background: var(--primary-800);
+            color: white;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            height: 86px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(107, 143, 181, 0.2);
+        }
+        
+        header .container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.5rem 1rem;
+            position: relative;
+            height: 100%;
+            width: 100%;
+            max-height: 100%;
+            overflow: hidden;
+        }
+        
+        @media (min-width: 1280px) {
+            header .container {
+                padding: 0.5rem 1.5rem;
+            }
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+        }
+        
+        .header-content img {
+            height: 86px;
+            padding: 0;
+            margin: 0;
+            object-fit: contain;
+            display: block;
+            max-height: 100%;
+        }
+        
+        /* Kazanan Tahminler Widget */
+        .completed-races-section {
+            display: none; /* Varsayılan olarak gizli, JavaScript ile gösterilecek */
+            margin-bottom: 2rem;
+        }
+        
+        .section-title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+        
+        .carousel-track:has(.widget-content.collapsed) .section-title-wrapper {
+            margin-bottom: 0;
+        }
+        
+        .completed-races-section .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        
+        .toggle-widget-btn {
+            background: rgba(107, 143, 181, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+        
+        .toggle-widget-btn:hover {
+            background: rgba(107, 143, 181, 0.3);
+            border-color: var(--primary-400);
+            color: var(--text-dark);
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s;
+            transform: rotate(180deg); /* Varsayılan: aşağı ok (açık) */
+        }
+        
+        .toggle-widget-btn.collapsed .toggle-icon {
+            transform: rotate(0deg); /* Kapalı: yukarı ok */
+        }
+        
+        /* Canlı badge (yanıp sönen) */
+        .canli-badge {
+            display: inline-block;
+            background: rgba(206, 229, 63, 0.2);
+            color: var(--green-500);
+            border: 1px solid rgba(206, 229, 63, 0.4);
+            border-radius: 4px;
+            padding: 0.125rem 0.375rem;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.375rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                background: rgba(206, 229, 63, 0.2);
+                border-color: rgba(206, 229, 63, 0.4);
+                box-shadow: 0 0 0 0 rgba(206, 229, 63, 0.4);
+            }
+            50% {
+                background: rgba(206, 229, 63, 0.35);
+                border-color: rgba(206, 229, 63, 0.6);
+                box-shadow: 0 0 8px 2px rgba(206, 229, 63, 0.3);
+            }
+        }
+        
+        .widget-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-bottom 0.3s ease-in-out, padding 0.3s ease-in-out;
+            max-height: 5000px;
+            opacity: 1;
+            margin-bottom: 0;
+        }
+        
+        .widget-content.collapsed {
+            max-height: 0 !important;
+            opacity: 0;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            height: 0 !important;
+        }
+        
+        .confetti-emoji {
+            display: inline-block;
+            font-size: 1.25rem;
+        }
+        
+        .completed-races-section .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        @media (min-width: 1280px) {
+            .completed-races-section .container {
+                padding: 0 1.5rem;
+            }
+        }
+        
+        .carousel-track {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            transition: padding-bottom 0.3s ease-in-out, gap 0.3s ease-in-out;
+        }
+        
+        .carousel-track .section-title {
+            margin-bottom: 0;
+        }
+        
+        .carousel-track:has(.widget-content.collapsed) {
+            padding: 1.5rem 1rem;
+            gap: 0;
+        }
+        
+        
+        .carousel-item-wrapper {
+            width: 100%;
+        }
+        
+        .carousel-race-group {
+            background: rgba(30, 46, 60, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .carousel-race-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .carousel-race-header .race-title {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .carousel-race-header .kosu-title {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .carousel-race-header .kosu-info-badge {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .carousel-race-header .kosu-info-badge.city-badge {
+            background: rgba(206, 229, 63, 0.2);
+            border-color: rgba(206, 229, 63, 0.3);
+            color: var(--green-500);
+            font-weight: 700;
+        }
+        
+        .carousel-race-group .race-horses {
+            padding: 1rem;
+        }
+        
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* Tabs Section */
+        .tabs-container {
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .box-title {
+            padding: 1rem 0.5rem 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .box-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        
+        .tabs-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        
+        #tabsList {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        #kosuTabsList {
+            border-top: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+        
+        /* Koşu tabları için özel stil */
+        #kosuTabsContainer {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        
+        #kosuTabsList {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        
+        #kosuTabsList::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+        
+        /* Mobilde tabları yatay scroll için */
+        @media (max-width: 768px) {
+            #kosuTabsList {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            #kosuTabsList .tab-button {
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+        }
+        
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            font-family: inherit;
+        }
+        
+        .tab-button:hover {
+            color: var(--green-500);
+            background: rgba(206, 229, 63, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .tab-button.active {
+            color: var(--green-500);
+            border-bottom-color: var(--green-500);
+            font-weight: 600;
+        }
+        
+        .fire-emoji {
+            display: inline-block;
+            animation: fireAnimation 1.5s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+        
+        @keyframes fireAnimation {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
+            25% {
+                transform: scale(1.1) rotate(-2deg);
+                filter: brightness(1.2);
+            }
+            50% {
+                transform: scale(1.15) rotate(2deg);
+                filter: brightness(1.3);
+            }
+            75% {
+                transform: scale(1.1) rotate(-1deg);
+                filter: brightness(1.2);
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--green-500);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        /* Best Bets Section */
+        .best-bets-section {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Koşular Section */
+        #kosularSection {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .best-bets-card {
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            animation: greenBorderGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes greenBorderGlow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(206, 229, 63, 0.3),
+                            0 0 20px rgba(206, 229, 63, 0.2),
+                            0 0 30px rgba(206, 229, 63, 0.1);
+                border-color: rgba(206, 229, 63, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(206, 229, 63, 0.5),
+                            0 0 30px rgba(206, 229, 63, 0.3),
+                            0 0 45px rgba(206, 229, 63, 0.2);
+                border-color: rgba(206, 229, 63, 0.6);
+            }
+        }
+        
+        .best-bets-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .best-bets-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .best-bets-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
+        
+        .last-update {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .sort-controls label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        .sort-select {
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        
+        .sort-select:hover {
+            background: rgba(30, 46, 60, 1);
+            border-color: var(--green-500);
+        }
+        
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--green-500);
+            box-shadow: 0 0 0 2px rgba(206, 229, 63, 0.2);
+        }
+        
+        .best-bets-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .best-bets-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .best-bet-tab-button {
+            background: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            font-family: inherit;
+            position: relative;
+        }
+        
+        .best-bet-tab-button:hover {
+            color: var(--green-500);
+        }
+        
+        .best-bet-tab-button.active {
+            color: var(--green-500);
+            border-bottom-color: var(--green-500);
+            font-weight: 600;
+        }
+        
+        .best-bets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        /* Race Group */
+        .race-group {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        
+        .race-header {
+            background: rgba(42, 61, 79, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            gap: 1rem;
+        }
+        
+        .race-winner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(206, 229, 63, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--green-500);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid rgba(206, 229, 63, 0.4);
+        }
+        
+        .race-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .race-title .kosu-title {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        /* Eski class'lar - artık kullanılmıyor ama geriye dönük uyumluluk için bırakıldı */
+        .race-number {
+            font-weight: 700;
+            color: var(--green-500);
+            font-size: 1rem;
+        }
+        
+        .race-time {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+        }
+        
+        .race-class {
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .race-track-type {
+            font-weight: 400;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .race-horses {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+        
+        /* Best bet card link */
+        .best-bet-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .best-bet-card-link:hover {
+            text-decoration: none;
+        }
+        
+        /* Best Bet Card - Glass efektli */
+        .best-bet-card {
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .best-bet-card-link:hover .best-bet-card {
+            background: rgba(30, 46, 60, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .best-bet-card-link:hover .best-bet-card:not(.winner) {
+            border-color: var(--border-color);
+        }
+        
+        /* Kazanan at kartı - öne çıkar */
+        .best-bet-card.winner {
+            border: 2px solid var(--green-500);
+        }
+        
+        .best-bet-card-link:hover .best-bet-card.winner {
+            border-color: var(--green-500);
+        }
+        
+        .winner-result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(206, 229, 63, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--green-500);
+            font-size: 0.875rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 2px solid var(--green-500);
+        }
+        
+        .winner-badge {
+            display: inline-block;
+            margin-top: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(206, 229, 63, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--green-500);
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 4px;
+            border: 1px solid rgba(206, 229, 63, 0.3);
+        }
+        
+        .loser-info {
+            display: inline-block;
+            margin-top: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--red-glass);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fca5a5;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .result-info {
+            display: inline-block;
+            margin-top: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(107, 143, 181, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--primary-300);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid rgba(107, 143, 181, 0.3);
+        }
+        
+        .best-bet-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .best-bet-content {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        
+        .best-bet-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .best-bet-header-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .best-bet-number {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: var(--green-500);
+            color: var(--primary-900);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(206, 229, 63, 0.3);
+        }
+        
+        .best-bet-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .jokey-name-light {
+            font-weight: 300;
+            color: var(--text-light);
+            opacity: 0.7;
+            margin-left: 0.25rem;
+            white-space: nowrap;
+        }
+        
+        .best-bet-details {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .soon-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 0;
+            padding: 0.375rem 0.75rem;
+            background: rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fca5a5;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .best-bet-values {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        @media (min-width: 640px) {
+            .best-bet-values {
+                flex-direction: row;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .best-bet-values {
+                width: auto;
+            }
+        }
+        
+        .value-box {
+            background: var(--blue-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        .value-item {
+            text-align: left;
+        }
+        
+        .value-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+        
+        .value-main {
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: white;
+        }
+        
+        .value-main.agf1 {
+            color: white;
+        }
+        
+        .value-main.ganyan {
+            color: white;
+        }
+        
+        .value-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
+        }
+        
+        .score-box {
+            background: rgba(206, 229, 63, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        .score-main {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--green-500);
+        }
+        
+        .score-main.profit {
+            color: var(--green-500);
+        }
+        
+        /* Koşu kartı - Glass efektli */
+        .kosu-kart {
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .kosu-baslik {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .kosu-baslik-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .kosu-baslik-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .kosu-sort-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .kosu-sort-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        .kosu-sort-select {
+            padding: 0.5rem 0.75rem;
+            background: rgba(30, 46, 60, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .kosu-sort-select:hover {
+            background: rgba(30, 46, 60, 1);
+            border-color: var(--green-500);
+        }
+        
+        .kosu-sort-select:focus {
+            outline: none;
+            border-color: var(--green-500);
+            box-shadow: 0 0 0 2px rgba(206, 229, 63, 0.2);
+        }
+        
+        .kosu-atlar-container {
+            margin-top: 1rem;
+        }
+        
+        .kosu-title {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            flex: 1;
+        }
+        
+        /* At bilgi badge'leri */
+        .at-info-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .at-info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.625rem;
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+        
+        .at-info-badge.ganyan {
+            color: var(--primary-300);
+        }
+        
+        .at-info-badge.ganyan-combined {
+            color: var(--primary-300);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .ganyan-badge-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ganyan-value {
+            white-space: nowrap;
+        }
+        
+        .ganyan-chart-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .ganyan-chart-wrapper svg {
+            display: block;
+            width: 60px;
+            height: 24px;
+        }
+        
+        .at-info-badge.en-iyi-derece {
+            color: var(--primary-300);
+        }
+        
+        .at-info-badge.en-iyi-derece.farkli-hipodrom {
+            background: var(--red-glass);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .at-info-badge.agf {
+            color: var(--primary-200);
+        }
+        
+        .at-info-badge.favori-sira {
+            color: var(--text-light);
+        }
+        
+        .at-info-badge.favori-sira.first {
+            background: rgba(206, 229, 63, 0.15);
+            border-color: rgba(206, 229, 63, 0.3);
+            color: var(--green-500);
+            font-weight: 600;
+        }
+        
+        /* Ganyan grafik son noktası için pulse animasyonlu glow (SVG animate ile yapılıyor) */
+        
+        /* At info badge tooltip */
+        .at-info-badge.has-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .at-info-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--primary-800);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+            line-height: 1.6;
+            text-align: left;
+            min-width: 200px;
+            max-width: 300px;
+            white-space: normal;
+        }
+        
+        .at-info-badge.has-tooltip:hover .at-info-tooltip,
+        .at-info-badge.has-tooltip:focus .at-info-tooltip {
+            display: block;
+        }
+        
+        /* Mobilde touch için */
+        @media (max-width: 768px) {
+            .at-info-badge.has-tooltip:active .at-info-tooltip {
+                display: block;
+            }
+        }
+        
+        .at-info-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: -1px;
+            border: 5px solid transparent;
+            border-top-color: var(--primary-800);
+            z-index: 10001;
+        }
+        
+        /* Tooltip'in ekran dışına taşmaması için */
+        @media (max-width: 768px) {
+            .at-info-tooltip {
+                left: auto;
+                right: 0;
+                transform: none;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            .at-info-tooltip::after {
+                left: auto;
+                right: 1rem;
+                transform: none;
+            }
+            
+            /* Mobilde at adı ve badge'ler için optimizasyon */
+            .at-info {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .at-header {
+                width: 100%;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .at-number {
+                flex-shrink: 0;
+            }
+            
+            .at-name-row {
+                flex: 1 1 calc(100% - 3rem);
+                min-width: 0;
+                max-width: calc(100% - 3rem);
+                flex-wrap: wrap;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            
+            .at-name {
+                font-size: 0.9rem;
+                line-height: 1.4;
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                word-break: break-word !important;
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                display: block !important;
+            }
+            
+            h3.at-name {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: visible !important;
+                white-space: normal !important;
+            }
+            
+            .at-jokey {
+                font-size: 0.85rem;
+                display: inline;
+            }
+            
+            .at-info-badges {
+                width: 100%;
+                margin-top: 0.375rem;
+                gap: 0.375rem;
+                flex: 1 1 100%;
+            }
+            
+            .at-info-badge {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                gap: 0.25rem;
+            }
+        }
+        
+        .kosu-info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(30, 46, 60, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+        
+        .kosu-info-badge.race-number {
+            background: rgba(206, 229, 63, 0.15);
+            border-color: rgba(206, 229, 63, 0.3);
+            color: var(--green-500);
+            font-weight: 700;
+        }
+        
+        .kosu-info-badge.time {
+            color: var(--primary-300);
+        }
+        
+        .kosu-info-badge.class {
+            color: var(--text-light);
+        }
+        
+        .kosu-info-badge.distance {
+            color: var(--primary-200);
+        }
+        
+        .kosu-info-badge.track {
+            color: var(--text-light);
+        }
+        
+        /* Pist türüne göre renkler */
+        .kosu-info-badge.track-cim {
+            color: #10b981; /* Yeşil - Çim için */
+        }
+        
+        .kosu-info-badge.track-kum {
+            color: #f59e0b; /* Turuncu/Kahverengi - Kum için */
+        }
+        
+        .kosu-info-badge.track-sentetik {
+            color: #f87171; /* Pastel kırmızı - Sentetik için */
+        }
+        
+        .kosu-info-badge.race-winner {
+            background: rgba(206, 229, 63, 0.2);
+            border-color: rgba(206, 229, 63, 0.3);
+            color: var(--green-500);
+            font-weight: 700;
+        }
+        
+        .kosu-info-badge.watch-live {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+        
+        .kosu-info-badge.watch-live:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        .kosu-info-badge.watch-live svg {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.25rem;
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+            }
+        }
+        
+        /* Tooltip için */
+        .kosu-info-badge.has-tooltip {
+            position: relative;
+            cursor: help;
+            z-index: 1000;
+        }
+        
+        .kosu-info-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--primary-800);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+            line-height: 1.6;
+            text-align: left;
+            min-width: 250px;
+            max-width: 350px;
+            white-space: normal;
+        }
+        
+        
+        .kosu-info-badge.has-tooltip:hover .kosu-info-tooltip,
+        .kosu-info-badge.has-tooltip:focus .kosu-info-tooltip {
+            display: block;
+        }
+        
+        /* Mobilde touch için */
+        @media (max-width: 768px) {
+            .kosu-info-badge.has-tooltip:active .kosu-info-tooltip {
+                display: block;
+            }
+        }
+        
+        .kosu-info-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: -1px;
+            border: 5px solid transparent;
+            border-top-color: var(--primary-800);
+            z-index: 10001;
+        }
+        
+        /* Tooltip'in ekran dışına taşmaması için */
+        @media (max-width: 768px) {
+            .kosu-info-tooltip {
+                left: auto;
+                right: 0;
+                transform: none;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            .kosu-info-tooltip::after {
+                left: auto;
+                right: 1rem;
+                transform: none;
+            }
+        }
+        
+        .kosu-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .kosu-meta span {
+            font-weight: 500;
+        }
+        
+        /* At kartı link */
+        .at-kart-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .at-kart-link:hover {
+            text-decoration: none;
+        }
+        
+        /* At kartı - Glass efektli */
+        .at-kart {
+            background: rgba(30, 46, 60, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .at-kart-link:hover .at-kart {
+            background: rgba(30, 46, 60, 0.7);
+            border-color: var(--green-500);
+            transform: translateY(-2px);
+        }
+        
+        .at-kart.winner {
+            border-color: var(--green-500);
+            border-width: 2px;
+        }
+        
+        .at-winner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(206, 229, 63, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--green-500);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid rgba(206, 229, 63, 0.4);
+        }
+        
+        .at-result-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(107, 143, 181, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--primary-300);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid rgba(107, 143, 181, 0.3);
+        }
+        
+        .at-kart-content {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .at-info {
+            flex: 1;
+            min-width: 0;
+            max-width: 100%;
+        }
+        
+        .at-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .at-number {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: var(--green-500);
+            color: var(--primary-900);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(206, 229, 63, 0.3);
+        }
+        
+        .at-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        .at-icon {
+            font-size: 1rem;
+        }
+        
+        .at-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 768px) {
+            .at-name {
+                overflow: visible !important;
+                text-overflow: clip !important;
+                white-space: normal !important;
+            }
+        }
+        
+        .at-jokey {
+            font-weight: 300;
+            color: var(--text-light);
+            opacity: 0.7;
+            margin-left: 0.5rem;
+        }
+        
+        .at-details-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .at-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .at-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .at-badge.green {
+            background: rgba(206, 229, 63, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--green-500);
+            border: 1px solid rgba(206, 229, 63, 0.3);
+        }
+        
+        .at-badge.blue {
+            background: var(--blue-glass);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--primary-300);
+            border: 1px solid rgba(107, 143, 181, 0.3);
+        }
+        
+        .at-badge.purple {
+            background: rgba(168, 85, 247, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .at-badge.indigo {
+            background: rgba(99, 102, 241, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .at-badge.yellow {
+            background: rgba(234, 179, 8, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fcd34d;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+        
+        .at-badge.red {
+            background: var(--red-glass);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        /* At badge tooltip */
+        .at-badge.has-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .at-badge-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--primary-800);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+            line-height: 1.6;
+            text-align: left;
+            min-width: 200px;
+            max-width: 300px;
+            white-space: normal;
+        }
+        
+        .at-badge.has-tooltip:hover .at-badge-tooltip,
+        .at-badge.has-tooltip:focus .at-badge-tooltip {
+            display: block;
+        }
+        
+        /* Mobilde touch için */
+        @media (max-width: 768px) {
+            .at-badge.has-tooltip:active .at-badge-tooltip {
+                display: block;
+            }
+        }
+        
+        .at-badge-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: -1px;
+            border: 5px solid transparent;
+            border-top-color: var(--primary-800);
+            z-index: 10001;
+        }
+        
+        /* Tooltip'in ekran dışına taşmaması için */
+        @media (max-width: 768px) {
+            .at-badge-tooltip {
+                left: auto;
+                right: 0;
+                transform: none;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            .at-badge-tooltip::after {
+                left: auto;
+                right: 1rem;
+                transform: none;
+            }
+        }
+        
+        .at-extra-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .at-extra-info span {
+            color: var(--text-light);
+        }
+        
+        .at-extra-info .label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .at-extra-info .value {
+            font-weight: 500;
+        }
+        
+        .at-extra-info .value.agf1 {
+            color: var(--primary-400);
+        }
+        
+        .at-extra-info .value.ganyan {
+            color: var(--primary-300);
+        }
+        
+        .at-extra-info .value.green {
+            color: var(--green-500);
+        }
+        
+        .at-stats {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .at-stat-label.has-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .at-stat-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--primary-800);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+            line-height: 1.6;
+            text-align: left;
+            min-width: 200px;
+            max-width: 300px;
+            white-space: normal;
+        }
+        
+        .at-stat-label.has-tooltip:hover .at-stat-tooltip,
+        .at-stat-label.has-tooltip:focus .at-stat-tooltip {
+            display: block;
+        }
+        
+        /* Mobilde touch için */
+        @media (max-width: 768px) {
+            .at-stat-label.has-tooltip:active .at-stat-tooltip {
+                display: block;
+            }
+        }
+        
+        .at-stat-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: -1px;
+            border: 5px solid transparent;
+            border-top-color: var(--primary-800);
+            z-index: 10001;
+        }
+        
+        /* Tooltip'in ekran dışına taşmaması için */
+        @media (max-width: 768px) {
+            .at-stat-tooltip {
+                left: auto;
+                right: 0;
+                transform: none;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            .at-stat-tooltip::after {
+                left: auto;
+                right: 1rem;
+                transform: none;
+            }
+        }
+        
+        .at-stat {
+            text-align: right;
+        }
+        
+        .at-stat-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .at-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        
+        .at-stat-value.top {
+            color: var(--green-500);
+        }
+        
+        .at-stat-sub {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.125rem;
+        }
+        
+        .at-ganyan {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        
+        .at-ganyan .value {
+            font-weight: 600;
+            color: var(--primary-300);
+        }
+        
+        /* Son 5 Yarış - Dark Mode */
+        .at-son-6-yaris {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+        
+        .at-son-6-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .at-son-6-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .at-son-6-list::before {
+            display: none;
+        }
+        
+        .at-son-6-list::after {
+            display: none;
+        }
+        
+        .at-son-6-item {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #E5E7EB;
+            border: 1px solid rgba(107, 143, 181, 0.2);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .at-son-6-item:hover {
+            border-color: rgba(107, 143, 181, 0.4);
+            text-decoration: none;
+        }
+        
+        .at-son-6-item.winner {
+            color: var(--green-500);
+            border: 1px solid rgba(206, 229, 63, 0.3);
+            font-weight: 600;
+        }
+        
+        .at-son-6-item.winner:hover {
+            border-color: rgba(206, 229, 63, 0.5);
+        }
+        
+        /* Tooltip */
+        .at-son-6-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--primary-800);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+            line-height: 1.6;
+            text-align: left;
+            min-width: 250px;
+            white-space: normal;
+        }
+        
+        .at-son-6-item:hover .at-son-6-tooltip {
+            display: block;
+        }
+        
+        .at-son-6-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: -1px;
+            border: 5px solid transparent;
+            border-top-color: var(--primary-800);
+            z-index: 1001;
+        }
+        
+        /* Footer - Dark Mode */
+        footer {
+            background: var(--primary-800);
+            color: white;
+            padding: 2.5rem 0;
+            margin-top: auto;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(107, 143, 181, 0.2);
+        }
+        
+        @media (min-width: 1024px) {
+            footer {
+                background: var(--primary-800);
+            }
+        }
+        
+        footer .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        @media (min-width: 1024px) {
+            footer .container {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        @media (min-width: 1024px) {
+            .footer-content {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        
+        .footer-logo img {
+            height: 2rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .footer-logo img {
+                height: 3rem;
+            }
+        }
+        
+        .footer-text {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: auto;
+        }
+        
+        .footer-text strong {
+            font-weight: 600;
+        }
+        
+        /* Error message - Dark Mode */
+        .error-message {
+            background: var(--red-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .error-message p {
+            color: #fca5a5;
+            font-weight: 500;
+        }
+        
+        /* Section spacing */
+        section {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (min-width: 640px) {
+            .sm\:block {
+                display: block !important;
+            }
+        }
+        
+        /* Mobil Responsive - Tutarlı ve Optimize Edilmiş */
+        @media (max-width: 768px) {
+            /* Container */
+            .container {
+                padding: 0 0.75rem !important;
+            }
+            
+            main {
+                padding: 1rem 0 !important;
+            }
+            
+            /* Başlıklar */
+            .completed-races-section .section-title,
+            .box-title h2 {
+                font-size: 1.125rem !important;
+            }
+            
+            .confetti-emoji {
+                font-size: 0.875rem !important;
+            }
+            
+            .best-bets-title h2 {
+                font-size: 1.125rem !important;
+            }
+            
+            .race-header h3 {
+                font-size: 1rem !important;
+            }
+            
+            /* Box Container Padding'leri - Tutarlı */
+            .carousel-track {
+                padding: 1rem 0.75rem !important;
+            }
+            
+            .carousel-track:has(.widget-content.collapsed) {
+                padding: 1rem 0.75rem !important;
+            }
+            
+            .tabs-container {
+                padding: 0.75rem !important;
+            }
+            
+            .box-title {
+                padding: 0.75rem 0.5rem 0.5rem 0.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .section-title-wrapper {
+                margin-bottom: 0.75rem !important;
+                padding: 0 !important;
+            }
+            
+            /* Best Bets Card */
+            .best-bets-card {
+                padding: 1rem 0.75rem !important;
+            }
+            
+            .best-bets-header {
+                margin-bottom: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+            
+            /* Tab Butonları */
+            .tab-button {
+                font-size: 0.75rem !important;
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            /* Race Cards */
+            .race-horses {
+                padding: 0.75rem !important;
+            }
+            
+            .carousel-race-header {
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            .carousel-race-group .race-horses {
+                padding: 0.75rem !important;
+            }
+            
+            /* At Kartları */
+            .at-kart {
+                padding: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .at-info {
+                padding: 0 !important;
+            }
+            
+            .at-name {
+                font-size: 0.8125rem !important;
+            }
+            
+            .at-jokey {
+                font-size: 0.6875rem !important;
+            }
+            
+            .at-number {
+                font-size: 0.8125rem !important;
+            }
+            
+            /* Best Bet Cards */
+            .best-bet-card {
+                padding: 0.75rem !important;
+            }
+            
+            .best-bet-content {
+                gap: 0.75rem !important;
+            }
+            
+            .best-bet-name {
+                font-size: 0.8125rem !important;
+            }
+            
+            .best-bet-details {
+                font-size: 0.6875rem !important;
+            }
+            
+            /* Badge'ler */
+            .kosu-info-badge,
+            .at-info-badge,
+            .at-badge {
+                font-size: 0.625rem !important;
+                padding: 0.25rem 0.5rem !important;
+            }
+            
+            /* Değerler ve Label'lar */
+            .value-label,
+            .at-stat-label,
+            .at-details-label {
+                font-size: 0.625rem !important;
+            }
+            
+            .value-main,
+            .at-stat-value,
+            .score-main {
+                font-size: 0.875rem !important;
+            }
+            
+            .value-sub,
+            .at-stat-sub {
+                font-size: 0.5625rem !important;
+            }
+            
+            /* Value ve Score Box'ları */
+            .value-box,
+            .score-box {
+                padding: 0.5rem !important;
+                gap: 0.5rem !important;
+            }
+            
+            .value-item {
+                padding: 0.375rem !important;
+            }
+            
+            /* Son 5 Yarış */
+            .at-son-6-yaris-item {
+                font-size: 0.6875rem !important;
+            }
+            
+            /* Section Spacing */
+            .completed-races-section {
+                margin-bottom: 1rem !important;
+            }
+            
+            section {
+                margin-bottom: 1rem !important;
+            }
+            
+            .best-bets-section {
+                margin-top: 0.75rem !important;
+                margin-bottom: 0.75rem !important;
+                padding-top: 0.75rem !important;
+            }
+            
+            #kosularSection {
+                margin-top: 0.75rem !important;
+                padding-top: 0.75rem !important;
+            }
+            
+            /* At Kartı Layout Optimizasyonu */
+            .at-kart-content {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+                align-items: stretch !important;
+            }
+            
+            .at-info {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+            }
+            
+            .at-header {
+                gap: 0.5rem !important;
+                margin-bottom: 0.375rem !important;
+            }
+            
+            .at-number {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .at-name-row {
+                flex: 1 !important;
+                min-width: 0 !important;
+                gap: 0.25rem !important;
+            }
+            
+            .at-info-badges {
+                margin-top: 0.5rem !important;
+                gap: 0.375rem !important;
+            }
+            
+            .at-stat {
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+                padding-top: 0.5rem !important;
+                border-top: 1px solid var(--border-color) !important;
+            }
+            
+            .at-details {
+                margin-top: 0.5rem !important;
+                gap: 0.375rem !important;
+            }
+            
+            /* Best Bet Card Layout */
+            .best-bet-content {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+            }
+            
+            .best-bet-info {
+                width: 100% !important;
+            }
+            
+            .best-bet-values {
+                width: 100% !important;
+                flex-direction: column !important;
+            }
+            
+            .value-box,
+            .score-box {
+                width: 100% !important;
+                min-width: auto !important;
+                padding: 0.5rem 0.75rem !important;
+                gap: 1rem !important;
+            }
+            
+            /* Race Header */
+            .race-header {
+                padding: 0.5rem 0.75rem !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Kosu Kartı */
+            .kosu-kart {
+                padding: 1rem 0.75rem !important;
+                margin-bottom: 1rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="min-height: 100vh; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <img src="{{ url_for('static', filename='logo.svg') }}" alt="digidig Logo">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Kazanan Tahminler Widget -->
+            <section class="completed-races-section" id="completedRacesCarousel">
+                <div class="container">
+                    <div class="carousel-track" id="carouselTrack">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <span class="confetti-emoji">🎉</span>
+                                Son Kazanan Tahminler
+                            </h2>
+                            <button class="toggle-widget-btn" id="toggleWidgetBtn" aria-label="Aç/Kapat">
+                                <svg class="toggle-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="widget-content" id="widgetContent">
+                            <!-- Carousel items will be inserted here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Content Section -->
+            <section>
+                <div class="container">
+<!-- Loading -->
+                    <div class="loading" id="contentLoading">
+                        <div class="loading-content">
+                            <div class="spinner"></div>
+                            <p class="loading-text">Tahminler yükleniyor...</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div id="tahminlerContent" style="display: none;">
+                        <!-- Tabs Container (Şehir, Koşu Tabları ve Koşular) -->
+                        <div class="tabs-container" id="tabsContainer">
+                            <div class="box-title">
+                                <h2>🏇 Günün Koşuları</h2>
+                            </div>
+                            <div class="loading" id="tabsLoading">
+                                <div class="loading-content">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text">Yükleniyor...</p>
+                                </div>
+                            </div>
+                            <div class="tabs-list" id="tabsList">
+                                <!-- Şehir tabları buraya dinamik olarak eklenecek -->
+                            </div>
+                            <!-- Koşu Tabları -->
+                            <div class="tabs-container" id="kosuTabsContainer" style="display: none;">
+                                <div class="tabs-list" id="kosuTabsList">
+                                    <!-- Koşu tabları buraya dinamik olarak eklenecek -->
+                                </div>
+                            </div>
+                            
+                            <!-- En Mantıklı Oyunlar Section -->
+                            <section class="best-bets-section" id="bestBetsSection" style="display: none;">
+                                <div class="best-bets-card">
+                                    <div class="best-bets-header">
+                                        <div class="best-bets-title">
+                                            <h2><img src="{{ url_for('static', filename='maskot.svg') }}" alt="Maskot" style="width: 1.5rem; height: 1.5rem; vertical-align: middle; margin-right: 0.5rem;">Anlık Yapay Zeka Tahminleri</h2>
+                                            <span class="last-update" id="lastUpdate">Son güncelleme: -</span>
+                                        </div>
+                                    </div>
+                                    <p class="best-bets-description">Kazanma olasılığı ve getiri potansiyeline göre en iyi fırsatlar</p>
+                                    <div class="best-bets-tabs" id="bestBetsTabs" style="display: none;">
+                                        <button class="best-bet-tab-button active" data-tab="active">Devam Eden</button>
+                                        <button class="best-bet-tab-button" data-tab="finished">Tamamlanan</button>
+                                    </div>
+                                    <div id="bestBetsList" class="best-bets-list">
+                                        <!-- En mantıklı oyunlar buraya eklenecek -->
+                                    </div>
+                                    <div id="bestBetsListFinished" class="best-bets-list" style="display: none;">
+                                        <!-- Tamamlanan oyunlar buraya eklenecek -->
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Koşular Section -->
+                            <section id="kosularSection">
+                                <!-- Koşular buraya dinamik olarak eklenecek -->
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div class="error-message" id="errorMessage" style="display: none;">
+                        <p>Tahminler yüklenirken bir hata oluştu.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo">
+                        <img src="{{ url_for('static', filename='logo.svg') }}" alt="digidig Logo">
+                    </div>
+                    <p class="footer-text">&copy; 2025 <strong>digidig</strong>. Tüm hakları saklıdır.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        window.currentHipodrom = null;
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
