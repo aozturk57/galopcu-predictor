@@ -15,5 +15,8 @@ joblib>=1.3.0
 # Scheduler
 apscheduler==3.10.4
 
+# Timezone
+pytz==2024.1
+
 # HTTP Requests
 requests==2.31.0

@@ -246,8 +246,10 @@ def api_update_time():
 def api_hipodromlar():
     """Mevcut hipodromları döndür - Yakında yarış olanları başa getir"""
     hipodrom_list = []
-    today = datetime.now().strftime('%d/%m/%Y')
-    current_time = datetime.now()
+    # Türkiye timezone'una göre tarih ve saat al
+    turkey_tz = pytz.timezone('Europe/Istanbul')
+    today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
+    current_time = datetime.now(turkey_tz)
     current_hour = current_time.hour
     current_minute = current_time.minute
     
