@@ -1473,11 +1473,12 @@ def api_completed_races():
                         # Tahmin dosyasını parse et
                         data = parse_tahmin_dosyasi(file_path)
                         if data:
-                            # Ganyan ve AGF verilerini ekle
-                            ganyan_agf_data = get_ganyan_agf_data(hipodrom)
-                            
-                            # En mantıklı oyunlar listesi oluştur
-                            if 'kosular' in data and data['kosular']:
+                            try:
+                                # Ganyan ve AGF verilerini ekle
+                                ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+                                
+                                # En mantıklı oyunlar listesi oluştur
+                                if 'kosular' in data and data['kosular']:
                                 # Türkiye timezone'una göre saat al
                                 turkey_tz = pytz.timezone('Europe/Istanbul')
                                 current_time = datetime.now(turkey_tz)
@@ -1615,11 +1616,11 @@ def api_completed_races():
                                     import traceback
                                     traceback.print_exc()
                                     continue
-                        except Exception as e:
-                            print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
-                            import traceback
-                            traceback.print_exc()
-                            continue
+                            except Exception as e:
+                                print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
+                                import traceback
+                                traceback.print_exc()
+                                continue
             except Exception as e:
                 print(f"❌ {hipodrom} tamamlanan koşular işlenirken hata: {e}")
                 import traceback
