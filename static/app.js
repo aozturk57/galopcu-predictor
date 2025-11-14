@@ -809,6 +809,9 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
                 const kosuTabsContainer = document.getElementById('kosuTabsContainer');
                 if (kosuTabsContainer) {
                     kosuTabsContainer.style.display = 'block';
+                    console.log('✅ Koşu tabları gösterildi:', data.kosular.length, 'koşu');
+                } else {
+                    console.error('❌ kosuTabsContainer bulunamadı!');
                 }
                 
                 // Koşu tab event listener'ları
