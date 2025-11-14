@@ -546,14 +546,14 @@ def api_tahminler(hipodrom):
                 print(f"📁 Output klasörü oluşturuldu: {output_dir}")
             
             # Tahmin dosyası yoksa, sadece bilgilendirme mesajı döndür
-            # Tahminler sadece günde bir kere (07:00) otomatik olarak oluşturulur
+            # Tahminler sadece günde bir kere (00:00) otomatik olarak oluşturulur
             return jsonify({
                 'error': f'{hipodrom} için tahmin dosyası bulunamadı',
-                'message': f'{hipodrom} için tahminler henüz hazır değil. Tahminler her gün sabah 07:00\'de otomatik olarak oluşturulur. Lütfen daha sonra tekrar deneyin.',
+                'message': f'{hipodrom} için tahminler henüz hazır değil. Tahminler her gün gece 00:00\'da otomatik olarak oluşturulur. Lütfen daha sonra tekrar deneyin.',
                 'hipodrom': hipodrom,
                 'file_path': file_path,
                 'updating': False,
-                'next_update': '07:00 (her gün)'
+                'next_update': '00:00 (her gün)'
             }), 404
         
         # Tahmin dosyasının son güncelleme zamanını kontrol et ve last_update_time'ı güncelle
@@ -576,7 +576,7 @@ def api_tahminler(hipodrom):
         
         # Cache'de yoksa parse et (bu hızlı olmalı)
         if data is None:
-            data = parse_tahmin_dosyasi(file_path)
+        data = parse_tahmin_dosyasi(file_path)
         if not data:
             print(f"❌ {hipodrom} için tahmin dosyası parse edilemedi")
             return jsonify({'error': 'Tahmin dosyası parse edilemedi'}), 500
@@ -589,7 +589,7 @@ def api_tahminler(hipodrom):
             if time_diff < CACHE_TTL:
                 ganyan_agf_data = cache_entry['data']
             else:
-                ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+        ganyan_agf_data = get_ganyan_agf_data(hipodrom)
                 _ganyan_cache[hipodrom] = {
                     'data': ganyan_agf_data,
                     'timestamp': datetime.now()
@@ -1572,52 +1572,52 @@ def api_completed_races():
                                                 top_bet['is_winner'] = False
                                                 finished_winners.append(top_bet)
                                 
-                                    # Her kazanan için completed_races'e ekle
+                                # Her kazanan için completed_races'e ekle
                                     try:
-                                        for bet in finished_winners:
-                                            # Timestamp hesapla
-                                            try:
-                                                race_hour, race_minute = map(int, bet['kosu_saat'].split(':'))
-                                                race_total_minutes = race_hour * 60 + race_minute
-                                            except:
-                                                race_total_minutes = 0
-                                            
-                                            # Ganyan değerini al (float veya None olabilir)
-                                            ganyan_value = bet.get('ganyan')
-                                            if ganyan_value is not None:
-                                                try:
-                                                    # String ise float'a çevir
-                                                    if isinstance(ganyan_value, str):
-                                                        ganyan_value = float(ganyan_value.replace(',', '.'))
-                                                    elif isinstance(ganyan_value, (int, float)):
-                                                        ganyan_value = float(ganyan_value)
-                                                except (ValueError, TypeError):
-                                                    ganyan_value = None
-                                            
-                                            completed_races.append({
-                                                'hipodrom': bet.get('hipodrom', hipodrom),
-                                                'kosu_no': bet.get('kosu_no'),
-                                                'kosu_saat': bet.get('kosu_saat'),
-                                                'kosu_mesafe': bet.get('kosu_mesafe'),
-                                                'pist_tur': bet.get('pist_tur'),
-                                                'kosu_sinif': bet.get('kosu_sinif'),
-                                                'cins_detay': bet.get('cins_detay'),
-                                                'at_no': bet.get('at_no'),
-                                                'at_adi': bet.get('at_adi'),
-                                                'jokey_adi': bet.get('jokey_adi'),
-                                                'is_winner': True,
-                                                'derece_sonuc': 1,
-                                                'combined_score': bet.get('combined_score'),
-                                                'ganyan': ganyan_value,
-                                                'timestamp': race_total_minutes
-                                            })
-                                    except Exception as e:
+                                for bet in finished_winners:
+                                    # Timestamp hesapla
+                                    try:
+                                        race_hour, race_minute = map(int, bet['kosu_saat'].split(':'))
+                                        race_total_minutes = race_hour * 60 + race_minute
+                                    except:
+                                        race_total_minutes = 0
+                                    
+                                    # Ganyan değerini al (float veya None olabilir)
+                                    ganyan_value = bet.get('ganyan')
+                                    if ganyan_value is not None:
+                                        try:
+                                            # String ise float'a çevir
+                                            if isinstance(ganyan_value, str):
+                                                ganyan_value = float(ganyan_value.replace(',', '.'))
+                                            elif isinstance(ganyan_value, (int, float)):
+                                                ganyan_value = float(ganyan_value)
+                                        except (ValueError, TypeError):
+                                            ganyan_value = None
+                                    
+                                    completed_races.append({
+                                        'hipodrom': bet.get('hipodrom', hipodrom),
+                                        'kosu_no': bet.get('kosu_no'),
+                                        'kosu_saat': bet.get('kosu_saat'),
+                                        'kosu_mesafe': bet.get('kosu_mesafe'),
+                                        'pist_tur': bet.get('pist_tur'),
+                                        'kosu_sinif': bet.get('kosu_sinif'),
+                                        'cins_detay': bet.get('cins_detay'),
+                                        'at_no': bet.get('at_no'),
+                                        'at_adi': bet.get('at_adi'),
+                                        'jokey_adi': bet.get('jokey_adi'),
+                                        'is_winner': True,
+                                        'derece_sonuc': 1,
+                                        'combined_score': bet.get('combined_score'),
+                                        'ganyan': ganyan_value,
+                                        'timestamp': race_total_minutes
+                                    })
+                    except Exception as e:
                                         print(f"⚠️ {hipodrom} için completed_races eklenirken hata: {e}")
-                                        import traceback
-                                        traceback.print_exc()
-                                        continue
-                            except Exception as e:
-                                print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        continue
+            except Exception as e:
+                print(f"❌ {hipodrom} tamamlanan koşular parse edilirken hata: {e}")
                                 import traceback
                                 traceback.print_exc()
                                 continue
@@ -1907,10 +1907,10 @@ scheduler.add_job(
 print(f"✅ Scheduler başlatıldı: {scheduler.running}")
 print(f"📋 Aktif job'lar: {[job.id for job in scheduler.get_jobs()]}")
 
-# Her gün sabah 07:00'da bugün koşu olan şehirler için tahmin çalıştır
+# Her gün gece 00:00'da bugün koşu olan şehirler için tahmin çalıştır
 scheduler.add_job(
     func=run_daily_update,
-    trigger=CronTrigger(hour=7, minute=0),
+    trigger=CronTrigger(hour=0, minute=0),
     id='daily_update',
     name='Daily update: Run predictions for cities with races today',
     replace_existing=True
