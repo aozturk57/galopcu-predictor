@@ -1543,35 +1543,35 @@ def api_completed_races():
                                         top_bets = []
                                         for race_key, race_bets in races_dict.items():
                                             sorted_bets = sorted(race_bets, key=lambda x: x.get('combined_score', 0), reverse=True)
-                                            top_bets.extend(sorted_bets[:3])
+                                                top_bets.extend(sorted_bets[:3])
                                         return top_bets
-                                
-                                # Bitmiş ve aktif koşuları ayır
-                                finished_bets = [b for b in all_candidates if b.get('is_finished')]
-                                active_bets = [b for b in all_candidates if not b.get('is_finished')]
-                                
-                                # Her gruptan en yüksek 3 atı al
-                                finished_top_bets = get_top_3_per_race_local(finished_bets)
-                                
-                                # Bitmiş koşulardan kazananları al
-                                finished_winners = [bet for bet in finished_top_bets if bet.get('is_winner')]
-                                
-                                # Eğer kazanan yoksa, bitmiş koşulardan en yüksek skorlu atları al
-                                if len(finished_winners) == 0 and len(finished_top_bets) > 0:
-                                    races_dict = {}
-                                    for bet in finished_top_bets:
-                                        race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
-                                        if race_key not in races_dict:
-                                            races_dict[race_key] = []
-                                        races_dict[race_key].append(bet)
                                     
-                                    for race_key, bets in races_dict.items():
-                                        bets_sorted = sorted(bets, key=lambda x: x.get('combined_score', 0), reverse=True)
-                                        if len(bets_sorted) > 0:
-                                            top_bet = bets_sorted[0].copy()
-                                            top_bet['is_winner'] = False
-                                            finished_winners.append(top_bet)
-                                
+                                    # Bitmiş ve aktif koşuları ayır
+                                    finished_bets = [b for b in all_candidates if b.get('is_finished')]
+                                    active_bets = [b for b in all_candidates if not b.get('is_finished')]
+                                    
+                                    # Her gruptan en yüksek 3 atı al
+                                    finished_top_bets = get_top_3_per_race_local(finished_bets)
+                                    
+                                    # Bitmiş koşulardan kazananları al
+                                    finished_winners = [bet for bet in finished_top_bets if bet.get('is_winner')]
+                                    
+                                    # Eğer kazanan yoksa, bitmiş koşulardan en yüksek skorlu atları al
+                                    if len(finished_winners) == 0 and len(finished_top_bets) > 0:
+                                        races_dict = {}
+                                        for bet in finished_top_bets:
+                                            race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
+                                            if race_key not in races_dict:
+                                                races_dict[race_key] = []
+                                            races_dict[race_key].append(bet)
+                                        
+                                        for race_key, bets in races_dict.items():
+                                            bets_sorted = sorted(bets, key=lambda x: x.get('combined_score', 0), reverse=True)
+                                            if len(bets_sorted) > 0:
+                                                top_bet = bets_sorted[0].copy()
+                                                top_bet['is_winner'] = False
+                                                finished_winners.append(top_bet)
+                                    
                                     # Her kazanan için completed_races'e ekle
                                     try:
                                         for bet in finished_winners:
