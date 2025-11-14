@@ -514,11 +514,31 @@ def api_tahminler(hipodrom):
                 print(f"📁 Output klasöründeki dosyalar: {files}")
             else:
                 print(f"❌ Output klasörü mevcut değil: {output_dir}")
+                # Output klasörünü oluştur
+                os.makedirs(output_dir, exist_ok=True)
+                print(f"📁 Output klasörü oluşturuldu: {output_dir}")
+            
+            # Eğer tahmin dosyası yoksa, hemen güncelleme tetikle (background'da)
+            import threading
+            def trigger_update():
+                try:
+                    print(f"🔄 {hipodrom} için otomatik güncelleme tetiklendi...")
+                    from horse_racing_predictor import HorseRacingPredictor
+                    predictor = HorseRacingPredictor(hipodrom)
+                    predictor.run_full_pipeline()
+                    print(f"✅ {hipodrom} için otomatik güncelleme tamamlandı")
+                except Exception as e:
+                    print(f"❌ {hipodrom} otomatik güncelleme hatası: {e}")
+            
+            thread = threading.Thread(target=trigger_update, daemon=True)
+            thread.start()
+            
             return jsonify({
                 'error': f'{hipodrom} için tahmin dosyası bulunamadı',
-                'message': 'Tahminler henüz hazırlanıyor, lütfen birkaç dakika sonra tekrar deneyin.',
+                'message': 'Tahminler henüz hazırlanıyor, arka planda güncelleme başlatıldı. Lütfen birkaç dakika sonra tekrar deneyin.',
                 'hipodrom': hipodrom,
-                'file_path': file_path
+                'file_path': file_path,
+                'updating': True
             }), 404
         
         # Tahmin dosyasının son güncelleme zamanını kontrol et ve last_update_time'ı güncelle
@@ -1397,7 +1417,7 @@ def api_completed_races():
                                 finished_winners = [bet for bet in finished_bets 
                                                    if bet.get('is_winner')]
                                 
-                                # Eğer kazanan yoksa, bitmiş koşulardan ilk 3'teki en yüksek skorlu atları al
+                                # Eğer kazanan yoksa, bitmiş koşulardan en yüksek skorlu atları al
                                 if len(finished_winners) == 0 and len(finished_bets) > 0:
                                     # Koşu bazında grupla ve her koşudan en yüksek skorlu atı al
                                     races_dict = {}
@@ -1407,11 +1427,15 @@ def api_completed_races():
                                             races_dict[race_key] = []
                                         races_dict[race_key].append(bet)
                                     
-                                    # Her koşudan en yüksek skorlu atı al
+                                    # Her koşudan en yüksek skorlu atı al (sadece ilk 3'teki değil, en yüksek skorlu)
                                     for race_key, bets in races_dict.items():
                                         bets_sorted = sorted(bets, key=lambda x: x.get('combined_score', 0), reverse=True)
                                         if len(bets_sorted) > 0:
-                                            finished_winners.append(bets_sorted[0])
+                                            # En yüksek skorlu atı al (kazanan olmasa bile)
+                                            top_bet = bets_sorted[0]
+                                            # is_winner'ı False yap (çünkü gerçek kazanan değil)
+                                            top_bet['is_winner'] = False
+                                            finished_winners.append(top_bet)
                                 
                                 # Her kazanan için completed_races'e ekle
                                 for bet in finished_winners:
