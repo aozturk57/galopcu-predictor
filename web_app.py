@@ -605,8 +605,25 @@ def api_tahminler(hipodrom):
             print(f"❌ {hipodrom} için tahmin dosyası parse edilemedi")
             return jsonify({'error': 'Tahmin dosyası parse edilemedi'}), 500
         
-        # Ganyan ve AGF verilerini ekle
-        ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+        # Ganyan ve AGF verilerini ekle (cache'li)
+        global _ganyan_cache
+        if hipodrom in _ganyan_cache:
+            cache_entry = _ganyan_cache[hipodrom]
+            time_diff = (datetime.now() - cache_entry['timestamp']).total_seconds()
+            if time_diff < CACHE_TTL:
+                ganyan_agf_data = cache_entry['data']
+            else:
+                ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+                _ganyan_cache[hipodrom] = {
+                    'data': ganyan_agf_data,
+                    'timestamp': datetime.now()
+                }
+        else:
+            ganyan_agf_data = get_ganyan_agf_data(hipodrom)
+            _ganyan_cache[hipodrom] = {
+                'data': ganyan_agf_data,
+                'timestamp': datetime.now()
+            }
         
         # En mantıklı oyunlar listesi - AGF1 ve Yapay Zeka skoruna göre
         all_candidates = []
