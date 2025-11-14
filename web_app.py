@@ -1486,53 +1486,53 @@ def api_completed_races():
                                     current_minute = current_time.minute
                                     
                                     def is_race_finished_local(kosu_saat):
-                                    """Koşu bitmiş mi? (saati geçmiş mi?)"""
-                                    try:
+                                        """Koşu bitmiş mi? (saati geçmiş mi?)"""
+                                        try:
                                         race_hour, race_minute = map(int, kosu_saat.split(':'))
                                         race_total_minutes = race_hour * 60 + race_minute
                                         current_total_minutes = current_hour * 60 + current_minute
                                         time_diff = current_total_minutes - race_total_minutes
                                         return time_diff >= 10
-                                    except:
-                                        return False
-                                
-                                # Best bets oluştur
-                                all_candidates = []
-                                for kosu in data['kosular']:
-                                    kosu_finished = is_race_finished_local(kosu.get('saat', ''))
-                                    race_winner = get_race_winner_helper(hipodrom, kosu.get('kosu_no'), kosu.get('saat')) if kosu_finished else None
+                                        except:
+                                            return False
                                     
-                                    for at in kosu.get('atlar', []):
-                                        at_no = at.get('at_no')
-                                        at_adi = at.get('at_adi')
+                                    # Best bets oluştur
+                                    all_candidates = []
+                                    for kosu in data['kosular']:
+                                        kosu_finished = is_race_finished_local(kosu.get('saat', ''))
+                                        race_winner = get_race_winner_helper(hipodrom, kosu.get('kosu_no'), kosu.get('saat')) if kosu_finished else None
                                         
-                                        # Ganyan ve AGF verilerini al
-                                        ganyan_value = ganyan_agf_data.get(at_adi, {}).get('ganyan')
-                                        agf1_value = ganyan_agf_data.get(at_adi, {}).get('agf1')
-                                        
-                                        # Combined score hesapla
-                                        ai_score = at.get('ai_score', 0)
-                                        combined_score = (ai_score * 0.7) + ((1.0 / (agf1_value or 100)) * 30)
-                                        
-                                        is_winner = race_winner and str(at_no) == str(race_winner)
-                                        
-                                        all_candidates.append({
-                                            'hipodrom': hipodrom,
-                                            'kosu_no': kosu.get('kosu_no'),
-                                            'kosu_saat': kosu.get('saat'),
-                                            'at_no': at_no,
-                                            'at_adi': at_adi,
-                                            'jokey_adi': at.get('jokey_adi'),
-                                            'ai_score': ai_score,
-                                            'combined_score': combined_score,
-                                            'ganyan': ganyan_value,
-                                            'agf1': agf1_value,
-                                            'is_finished': kosu_finished,
-                                            'is_winner': is_winner
-                                        })
-                                
-                                # Koşu bazında en yüksek 3 atı al
-                                def get_top_3_per_race_local(bets):
+                                        for at in kosu.get('atlar', []):
+                                            at_no = at.get('at_no')
+                                            at_adi = at.get('at_adi')
+                                            
+                                            # Ganyan ve AGF verilerini al
+                                            ganyan_value = ganyan_agf_data.get(at_adi, {}).get('ganyan')
+                                            agf1_value = ganyan_agf_data.get(at_adi, {}).get('agf1')
+                                            
+                                            # Combined score hesapla
+                                            ai_score = at.get('ai_score', 0)
+                                            combined_score = (ai_score * 0.7) + ((1.0 / (agf1_value or 100)) * 30)
+                                            
+                                            is_winner = race_winner and str(at_no) == str(race_winner)
+                                            
+                                            all_candidates.append({
+                                                'hipodrom': hipodrom,
+                                                'kosu_no': kosu.get('kosu_no'),
+                                                'kosu_saat': kosu.get('saat'),
+                                                'at_no': at_no,
+                                                'at_adi': at_adi,
+                                                'jokey_adi': at.get('jokey_adi'),
+                                                'ai_score': ai_score,
+                                                'combined_score': combined_score,
+                                                'ganyan': ganyan_value,
+                                                'agf1': agf1_value,
+                                                'is_finished': kosu_finished,
+                                                'is_winner': is_winner
+                                            })
+                                    
+                                    # Koşu bazında en yüksek 3 atı al
+                                    def get_top_3_per_race_local(bets):
                                     races_dict = {}
                                     for bet in bets:
                                         race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
