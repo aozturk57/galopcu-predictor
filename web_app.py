@@ -1343,6 +1343,7 @@ def api_manual_update():
             try:
                 print("📥 CSV verileri güncelleniyor...")
                 update_all_data()
+                print("✅ CSV güncellemesi tamamlandı")
                 print("🎯 Tahminler oluşturuluyor...")
                 run_daily_update()
                 print("="*60)
@@ -1361,7 +1362,7 @@ def api_manual_update():
         
         return jsonify({
             'status': 'success',
-            'message': 'Güncelleme başlatıldı, arka planda çalışıyor... Log\'ları kontrol et.'
+            'message': 'Güncelleme başlatıldı, arka planda çalışıyor... Log\'ları kontrol et. 10-15 dakika sürebilir.'
         })
     except Exception as e:
         return jsonify({
@@ -1714,8 +1715,8 @@ def initial_data_update():
     import threading
     import time
     def update_in_background():
-        # 30 saniye bekle (uygulama tamamen başlasın)
-        time.sleep(30)
+        # 10 saniye bekle (uygulama tamamen başlasın) - Render için daha hızlı
+        time.sleep(10)
         print("="*60)
         print("🔄 İlk veri güncellemesi başlatılıyor...")
         print(f"📅 Zaman: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
@@ -1743,7 +1744,7 @@ def initial_data_update():
     # Background thread'de çalıştır (uygulama başlamasını engellemesin)
     thread = threading.Thread(target=update_in_background, daemon=True)
     thread.start()
-    print("✅ İlk güncelleme thread'i başlatıldı (30 saniye sonra başlayacak)")
+    print("✅ İlk güncelleme thread'i başlatıldı (10 saniye sonra başlayacak)")
 
 # Uygulama başlarken ilk güncellemeyi yap
 initial_data_update()
