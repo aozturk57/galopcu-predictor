@@ -1481,11 +1481,11 @@ def api_completed_races():
                                 if 'kosular' in data and data['kosular']:
                                     # Türkiye timezone'una göre saat al
                                     turkey_tz = pytz.timezone('Europe/Istanbul')
-                                current_time = datetime.now(turkey_tz)
-                                current_hour = current_time.hour
-                                current_minute = current_time.minute
-                                
-                                def is_race_finished_local(kosu_saat):
+                                    current_time = datetime.now(turkey_tz)
+                                    current_hour = current_time.hour
+                                    current_minute = current_time.minute
+                                    
+                                    def is_race_finished_local(kosu_saat):
                                     """Koşu bitmiş mi? (saati geçmiş mi?)"""
                                     try:
                                         race_hour, race_minute = map(int, kosu_saat.split(':'))
