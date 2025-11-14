@@ -1574,9 +1574,9 @@ def api_completed_races():
                                 
                                 # Her kazanan için completed_races'e ekle
                                     try:
-                                for bet in finished_winners:
-                                    # Timestamp hesapla
-                                    try:
+                                        for bet in finished_winners:
+                                            # Timestamp hesapla
+                                            try:
                                         race_hour, race_minute = map(int, bet['kosu_saat'].split(':'))
                                         race_total_minutes = race_hour * 60 + race_minute
                                     except:
