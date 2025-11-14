@@ -705,7 +705,31 @@ async function loadTahminler(hipodrom, preserveScroll = false, skipAutoSelect = 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API hatası:', response.status, errorText);
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
+            
+            // Loading'i gizle ve hata mesajı göster
+            loading.style.display = 'none';
+            error.style.display = 'block';
+            
+            if (response.status === 404) {
+                error.innerHTML = `
+                    <p style="color: #991b1b; font-weight: 500; margin-bottom: 1rem;">
+                        ⏳ ${hipodrom} için tahminler henüz hazırlanıyor...
+                    </p>
+                    <p style="color: var(--text-light); font-size: 0.9rem;">
+                        Veriler güncelleniyor, lütfen birkaç dakika sonra tekrar deneyin.
+                    </p>
+                `;
+            } else {
+                error.innerHTML = `
+                    <p style="color: #991b1b; font-weight: 500;">
+                        ❌ Hata: ${response.status}
+                    </p>
+                    <p style="color: var(--text-light); font-size: 0.9rem;">
+                        ${errorText || 'Bilinmeyen bir hata oluştu'}
+                    </p>
+                `;
+            }
+            return;
         }
         
         const data = await response.json();

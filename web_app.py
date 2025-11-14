@@ -507,7 +507,19 @@ def api_tahminler(hipodrom):
         
         if not os.path.exists(file_path):
             print(f"❌ {hipodrom} için tahmin dosyası bulunamadı: {file_path}")
-            return jsonify({'error': f'{hipodrom} için tahmin dosyası bulunamadı'}), 404
+            # Output klasörünü kontrol et
+            output_dir = 'output'
+            if os.path.exists(output_dir):
+                files = os.listdir(output_dir)
+                print(f"📁 Output klasöründeki dosyalar: {files}")
+            else:
+                print(f"❌ Output klasörü mevcut değil: {output_dir}")
+            return jsonify({
+                'error': f'{hipodrom} için tahmin dosyası bulunamadı',
+                'message': 'Tahminler henüz hazırlanıyor, lütfen birkaç dakika sonra tekrar deneyin.',
+                'hipodrom': hipodrom,
+                'file_path': file_path
+            }), 404
         
         # Tahmin dosyasının son güncelleme zamanını kontrol et ve last_update_time'ı güncelle
         file_mtime = os.path.getmtime(file_path)
