@@ -732,8 +732,8 @@ def api_tahminler(hipodrom):
                 try:
                     df = pd.read_csv(csv_path, encoding='utf-8')
                     # Türkiye timezone'una göre tarih al
-        turkey_tz = pytz.timezone('Europe/Istanbul')
-        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
+                    turkey_tz = pytz.timezone('Europe/Istanbul')
+                    today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
                     today_df = df[df['tarih'] == today]
                     
                     if len(today_df) > 0:
