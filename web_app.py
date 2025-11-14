@@ -1381,7 +1381,18 @@ def api_tahminler(hipodrom):
         # En mantıklı oyunlar: Koşu bazında gruplanmış, her koşu için en yüksek 3 at
         data['best_bets'] = all_candidates_sorted
         
-        return jsonify(data)
+        # Response'u hazırla
+        response_data = data
+        
+        # Cache'e kaydet (parse edilmiş data'yı da sakla)
+        _tahmin_cache[hipodrom] = {
+            'data': response_data,
+            'timestamp': datetime.now(),
+            'file_mtime': file_mtime,
+            'parsed_data': data  # Parse edilmiş data'yı da sakla (tekrar parse etmemek için)
+        }
+        
+        return jsonify(response_data)
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
