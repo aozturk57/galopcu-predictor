@@ -1626,22 +1626,38 @@ last_update_time = datetime.now().isoformat()
 def initial_data_update():
     """Uygulama başlarken ilk veri güncellemesini yap (background'da)"""
     import threading
+    import time
     def update_in_background():
+        # 30 saniye bekle (uygulama tamamen başlasın)
+        time.sleep(30)
+        print("="*60)
         print("🔄 İlk veri güncellemesi başlatılıyor...")
+        print(f"📅 Zaman: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        print("="*60)
         try:
             # Önce CSV verilerini güncelle
+            print("📥 1. Adım: CSV verileri güncelleniyor...")
             update_all_data()
+            print("✅ CSV güncellemesi tamamlandı")
+            
             # Sonra bugün koşu olan şehirler için tahmin çalıştır
+            print("🎯 2. Adım: Tahminler oluşturuluyor...")
             run_daily_update()
-            print("✅ İlk veri güncellemesi tamamlandı")
+            print("="*60)
+            print("✅ İlk veri güncellemesi tamamlandı!")
+            print(f"📅 Zaman: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+            print("="*60)
         except Exception as e:
+            print("="*60)
             print(f"❌ İlk veri güncellemesi hatası: {e}")
             import traceback
             traceback.print_exc()
+            print("="*60)
     
     # Background thread'de çalıştır (uygulama başlamasını engellemesin)
     thread = threading.Thread(target=update_in_background, daemon=True)
     thread.start()
+    print("✅ İlk güncelleme thread'i başlatıldı (30 saniye sonra başlayacak)")
 
 # Uygulama başlarken ilk güncellemeyi yap
 initial_data_update()
