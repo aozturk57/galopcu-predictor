@@ -545,39 +545,15 @@ def api_tahminler(hipodrom):
                 os.makedirs(output_dir, exist_ok=True)
                 print(f"📁 Output klasörü oluşturuldu: {output_dir}")
             
-            # Eğer tahmin dosyası yoksa, hemen güncelleme tetikle (background'da)
-            # Ama sadece bir kez tetikle (çoklu istekleri önlemek için)
-            if not hasattr(api_tahminler, '_updating_hipodroms'):
-                api_tahminler._updating_hipodroms = set()
-            
-            if hipodrom not in api_tahminler._updating_hipodroms:
-                api_tahminler._updating_hipodroms.add(hipodrom)
-                import threading
-                def trigger_update():
-                    try:
-                        print(f"🔄 {hipodrom} için otomatik güncelleme tetiklendi...")
-                        from horse_racing_predictor import HorseRacingPredictor
-                        predictor = HorseRacingPredictor(hipodrom)
-                        predictor.run_full_pipeline()
-                        print(f"✅ {hipodrom} için otomatik güncelleme tamamlandı")
-                    except Exception as e:
-                        print(f"❌ {hipodrom} otomatik güncelleme hatası: {e}")
-                        import traceback
-                        traceback.print_exc()
-                    finally:
-                        # Güncelleme bitince listeden çıkar
-                        if hasattr(api_tahminler, '_updating_hipodroms'):
-                            api_tahminler._updating_hipodroms.discard(hipodrom)
-                
-                thread = threading.Thread(target=trigger_update, daemon=True)
-                thread.start()
-            
+            # Tahmin dosyası yoksa, sadece bilgilendirme mesajı döndür
+            # Tahminler sadece günde bir kere (07:00) otomatik olarak oluşturulur
             return jsonify({
                 'error': f'{hipodrom} için tahmin dosyası bulunamadı',
-                'message': 'Tahminler henüz hazırlanıyor, arka planda güncelleme başlatıldı. Lütfen birkaç dakika sonra tekrar deneyin.',
+                'message': f'{hipodrom} için tahminler henüz hazır değil. Tahminler her gün sabah 07:00\'de otomatik olarak oluşturulur. Lütfen daha sonra tekrar deneyin.',
                 'hipodrom': hipodrom,
                 'file_path': file_path,
-                'updating': True
+                'updating': False,
+                'next_update': '07:00 (her gün)'
             }), 404
         
         # Tahmin dosyasının son güncelleme zamanını kontrol et ve last_update_time'ı güncelle
