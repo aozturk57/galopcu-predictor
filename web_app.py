@@ -14,6 +14,7 @@ from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 from pathlib import Path
 from datetime import datetime
+import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -189,7 +190,9 @@ def get_race_winner_helper(hipodrom, kosu_no, kosu_saat=None):
     
     try:
         df = pd.read_csv(csv_path, encoding='utf-8')
-        today = datetime.now().strftime('%d/%m/%Y')
+        # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
         today_df = df[df['tarih'] == today]
         
         if len(today_df) == 0:
@@ -363,7 +366,9 @@ def get_ganyan_agf_data(hipodrom):
             return {}
         
         # Bugünün verilerini filtrele
-        today = datetime.now().strftime('%d/%m/%Y')
+        # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
         today_df = df[df['tarih'] == today].copy()
         
         if today_df.empty:
@@ -574,7 +579,9 @@ def api_tahminler(hipodrom):
         all_candidates = []
         
         # Şu anki saat (saat:dakika formatında)
-        current_time = datetime.now()
+        # Türkiye timezone'una göre saat al (GMT+3)
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        current_time = datetime.now(turkey_tz)
         current_hour = current_time.hour
         current_minute = current_time.minute
         
@@ -614,7 +621,9 @@ def api_tahminler(hipodrom):
             
             try:
                 df = pd.read_csv(csv_path, encoding='utf-8')
-                today = datetime.now().strftime('%d/%m/%Y')
+                # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
                 today_df = df[df['tarih'] == today]
                 
                 if len(today_df) == 0:
@@ -720,7 +729,9 @@ def api_tahminler(hipodrom):
             if os.path.exists(csv_path):
                 try:
                     df = pd.read_csv(csv_path, encoding='utf-8')
-                    today = datetime.now().strftime('%d/%m/%Y')
+                    # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
                     today_df = df[df['tarih'] == today]
                     
                     if len(today_df) > 0:
@@ -790,7 +801,9 @@ def api_tahminler(hipodrom):
                 if os.path.exists(csv_path):
                     try:
                         df = pd.read_csv(csv_path, encoding='utf-8')
-                        today = datetime.now().strftime('%d/%m/%Y')
+                        # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
                         today_df = df[df['tarih'] == today]
                         
                         if len(today_df) > 0:
@@ -974,7 +987,9 @@ def api_tahminler(hipodrom):
                 if os.path.exists(csv_path):
                     try:
                         df = pd.read_csv(csv_path, encoding='utf-8')
-                        today = datetime.now().strftime('%d/%m/%Y')
+                        # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
                         
                         # Bugünün tarihinden önceki yarışları al
                         past_df = df[df['tarih'] != today].copy()
@@ -1544,7 +1559,9 @@ def update_ganyan_history(hipodrom):
         
         # CSV'den bugünkü verileri oku
         df = pd.read_csv(csv_path, encoding='utf-8')
-        today = datetime.now().strftime('%d/%m/%Y')
+        # Türkiye timezone'una göre tarih al
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        today = datetime.now(turkey_tz).strftime('%d/%m/%Y')
         
         if 'tarih' not in df.columns:
             return
