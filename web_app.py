@@ -1309,6 +1309,36 @@ def api_tahminler(hipodrom):
         print(f"Traceback: {error_trace}")
         return jsonify({'error': str(e), 'traceback': error_trace}), 500
 
+@app.route('/api/manual-update', methods=['POST'])
+def api_manual_update():
+    """Manuel güncelleme tetikle (test için)"""
+    try:
+        print("🔄 Manuel güncelleme tetiklendi...")
+        # Background thread'de çalıştır
+        import threading
+        def update_in_background():
+            try:
+                update_all_data()
+                run_daily_update()
+                print("✅ Manuel güncelleme tamamlandı")
+            except Exception as e:
+                print(f"❌ Manuel güncelleme hatası: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        thread = threading.Thread(target=update_in_background, daemon=True)
+        thread.start()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Güncelleme başlatıldı, arka planda çalışıyor...'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
 @app.route('/api/completed-races')
 def api_completed_races():
     """Tüm şehirlerden son 5 tamamlanan koşuyu döndür (carousel widget için) - En Mantıklı Oyunlar'daki kazananlar"""
