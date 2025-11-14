@@ -1315,9 +1315,29 @@ def api_completed_races():
                         if response.status_code == 200:
                             data = response.get_json()
                             if data and 'best_bets' in data:
-                                # Bitmiş ve kazanan olanları filtrele
-                                finished_winners = [bet for bet in data['best_bets'] 
-                                                   if bet.get('is_finished') and bet.get('is_winner')]
+                                # Bitmiş koşuları filtrele (kazanan olmasa bile göster)
+                                finished_bets = [bet for bet in data['best_bets'] 
+                                                if bet.get('is_finished')]
+                                
+                                # Sadece kazanan olanları al (eğer varsa)
+                                finished_winners = [bet for bet in finished_bets 
+                                                   if bet.get('is_winner')]
+                                
+                                # Eğer kazanan yoksa, bitmiş koşulardan ilk 3'teki en yüksek skorlu atları al
+                                if len(finished_winners) == 0 and len(finished_bets) > 0:
+                                    # Koşu bazında grupla ve her koşudan en yüksek skorlu atı al
+                                    races_dict = {}
+                                    for bet in finished_bets:
+                                        race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
+                                        if race_key not in races_dict:
+                                            races_dict[race_key] = []
+                                        races_dict[race_key].append(bet)
+                                    
+                                    # Her koşudan en yüksek skorlu atı al
+                                    for race_key, bets in races_dict.items():
+                                        bets_sorted = sorted(bets, key=lambda x: x.get('combined_score', 0), reverse=True)
+                                        if len(bets_sorted) > 0:
+                                            finished_winners.append(bets_sorted[0])
                                 
                                 # Her kazanan için completed_races'e ekle
                                 for bet in finished_winners:
