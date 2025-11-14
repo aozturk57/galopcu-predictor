@@ -1534,17 +1534,17 @@ def api_completed_races():
                                     # Koşu bazında en yüksek 3 atı al
                                     def get_top_3_per_race_local(bets):
                                         races_dict = {}
-                                    for bet in bets:
-                                        race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
-                                        if race_key not in races_dict:
-                                            races_dict[race_key] = []
-                                        races_dict[race_key].append(bet)
-                                    
-                                    top_bets = []
-                                    for race_key, race_bets in races_dict.items():
-                                        sorted_bets = sorted(race_bets, key=lambda x: x.get('combined_score', 0), reverse=True)
-                                        top_bets.extend(sorted_bets[:3])
-                                    return top_bets
+                                        for bet in bets:
+                                            race_key = f"{bet.get('kosu_no')}_{bet.get('kosu_saat')}"
+                                            if race_key not in races_dict:
+                                                races_dict[race_key] = []
+                                            races_dict[race_key].append(bet)
+                                        
+                                        top_bets = []
+                                        for race_key, race_bets in races_dict.items():
+                                            sorted_bets = sorted(race_bets, key=lambda x: x.get('combined_score', 0), reverse=True)
+                                            top_bets.extend(sorted_bets[:3])
+                                        return top_bets
                                 
                                 # Bitmiş ve aktif koşuları ayır
                                 finished_bets = [b for b in all_candidates if b.get('is_finished')]
@@ -1572,7 +1572,7 @@ def api_completed_races():
                                             top_bet['is_winner'] = False
                                             finished_winners.append(top_bet)
                                 
-                                # Her kazanan için completed_races'e ekle
+                                    # Her kazanan için completed_races'e ekle
                                     try:
                                         for bet in finished_winners:
                                             # Timestamp hesapla
